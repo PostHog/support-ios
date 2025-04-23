@@ -34,33 +34,32 @@ struct LoginView: View {
                     // Update user ID in our state
                     userState.updateUserId(username)
                     
-                    // Set user to standard initially (default state)
-                    userState.updatePlan(.standard)
-                    
-                    // 🔐 Identify user with initial properties
+                    // 🔐 Identify user without setting plan - we'll get this from PostHog
                     PostHogSDK.shared.identify(
                         username,
                         userProperties: [
                             "login_method": "mock",
-                            "role": "tester",
-                            "plan": PlanType.standard.rawValue // Default to standard plan
-                        ],
-                        userPropertiesSetOnce: [
-                            "date_of_first_log_in": ISO8601DateFormatter().string(from: Date())
+                            "role": "tester"
+                            // Don't set plan here - we'll get it from PostHog's stored properties
                         ]
                     )
                     
-                    // Log login event with plan property
-                    PostHogSDK.shared.capture("user_logged_in", properties: [
-                        "plan": PlanType.standard.rawValue
-                    ])
+                    // Log login event
+                    PostHogSDK.shared.capture("user_logged_in")
                     
                     // Flush to ensure the identify call is sent immediately
                     PostHogSDK.shared.flush()
                     
-                    // Complete login - feature flags are already loaded by identify
+                    // Explicitly reload feature flags after login
+                    // This will get the user's stored properties including their plan
+                    PostHogSDK.shared.reloadFeatureFlags()
+                    
+                    // Complete login
                     isLoggingIn = false
                     isLoggedIn = true
+                    
+                    // The DashboardView will look at the feature flag values
+                    // and update the UI based on the user's actual plan
                 }
             }
             .disabled(isLoggingIn)

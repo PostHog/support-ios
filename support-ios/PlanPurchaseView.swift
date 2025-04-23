@@ -63,6 +63,7 @@ struct PlanPurchaseView: View {
         ])
         
         // Update user properties in PostHog with the new plan
+        // userState.userId is the same as username from login since LoginView updates it
         PostHogSDK.shared.identify(
             userState.userId,
             userProperties: [
@@ -73,8 +74,11 @@ struct PlanPurchaseView: View {
         // Flush to ensure the identify call is sent immediately
         PostHogSDK.shared.flush()
         
-        // Check if we should show the upgrade modal based on the selected plan
-        // Since plan property was just updated, the flag value will reflect that
+        // Reload feature flags to get the latest based on new plan
+        // This is required for iOS SDK as flag values are cached
+        PostHogSDK.shared.reloadFeatureFlags()
+        
+        // Now check the updated flag value
         if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
             if planFeatures == "pro" || planFeatures == "enterprise" {
                 showUpgradeModal = true

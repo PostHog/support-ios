@@ -101,6 +101,10 @@ struct DashboardView: View {
     private func loadFeatureFlags() {
         isLoadingFeatureFlags = true
         
+        // Explicitly reload feature flags to ensure we have the latest values
+        // This is required for iOS SDK as flag values are cached
+        PostHogSDK.shared.reloadFeatureFlags()
+        
         // Check for the plan-features flag
         if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String,
            let planType = PlanType(rawValue: planFeatures) {
