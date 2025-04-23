@@ -55,14 +55,14 @@ struct TypingView: View {
         .cornerRadius(12)
         .padding()
         .onAppear {
-            checkUserPlan()
+            checkPlanFeatureFlag()
         }
     }
     
-    private func checkUserPlan() {
-        // Check for plan feature flag first
-        if let userPlan = PostHogSDK.shared.getFeatureFlag("user-plan") as? String {
-            switch userPlan {
+    private func checkPlanFeatureFlag() {
+        // Check the feature flag that targets based on plan property
+        if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
+            switch planFeatures {
             case "pro":
                 planThemeColor = .purple
                 planName = "Pro"
@@ -73,6 +73,13 @@ struct TypingView: View {
                 planThemeColor = .blue
                 planName = "Standard"
             }
+            
+            print("Plan features from feature flag: \(planFeatures)")
+        } else {
+            // Default to standard plan if no feature flag is found
+            planThemeColor = .blue
+            planName = "Standard"
+            print("No plan-features flag found, using Standard")
         }
     }
 }

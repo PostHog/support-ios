@@ -101,66 +101,49 @@ struct DashboardView: View {
     private func loadFeatureFlags() {
         isLoadingFeatureFlags = true
         
-        // First, ensure PostHog has the latest user ID
-        PostHogSDK.shared.identify(
-            userState.userId,
-            userProperties: [:]  // Don't set plan here, it will be set based on feature flag
-        )
-        
-        // Flush to ensure the identify call is processed
-        PostHogSDK.shared.flush()
-        
-        // Reload feature flags and check flag values after they're ready
-        PostHogSDK.shared.reloadFeatureFlags {
-            // First check if there's a user-plan feature flag that should override the current plan
-            if let userPlan = PostHogSDK.shared.getFeatureFlag("user-plan") as? String,
-               let planType = PlanType(rawValue: userPlan) {
-                // Only update if the plan is different
-                if planType != userState.plan {
-                    print("Updating plan from feature flag: \(planType.displayName)")
-                    userState.updatePlan(planType)
-                    
-                    // Update the plan in PostHog properties
-                    PostHogSDK.shared.identify(
-                        userState.userId,
-                        userProperties: [
-                            "plan": planType.rawValue
-                        ]
-                    )
-                }
+        // Check for the plan-features flag
+        if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String,
+           let planType = PlanType(rawValue: planFeatures) {
+            
+            // Update the user state with the plan from feature flag
+            userState.updatePlan(planType)
+            
+            // Set feature visibility based on the feature flag value
+            switch planFeatures {
+            case "pro":
+                self.showProFeatures = true
+                self.showEnterpriseFeatures = false
+                self.customDashboardColor = .purple
+            case "enterprise":
+                self.showProFeatures = true
+                self.showEnterpriseFeatures = true
+                self.customDashboardColor = .green
+            default: // standard or unknown
+                self.showProFeatures = false
+                self.showEnterpriseFeatures = false
+                self.customDashboardColor = .blue
             }
             
-            // Boolean feature flag check
-            self.showProFeatures = PostHogSDK.shared.isFeatureEnabled("show-pro-features")
-            
-            // Another boolean feature flag check
-            self.showEnterpriseFeatures = PostHogSDK.shared.isFeatureEnabled("show-enterprise-features")
-            
-            // Multivariate feature flag check
-            if let colorValue = PostHogSDK.shared.getFeatureFlag("dashboard-color") as? String {
-                switch colorValue {
-                case "red": self.customDashboardColor = .red
-                case "green": self.customDashboardColor = .green
-                case "purple": self.customDashboardColor = .purple
-                default: self.customDashboardColor = .blue
-                }
-                
-                // Optional: getting the payload example
-                let colorPayload = PostHogSDK.shared.getFeatureFlagPayload("dashboard-color")
-                print("Dashboard color payload: \(String(describing: colorPayload))")
-            }
-            
-            // Log the feature flag evaluations for debugging
-            PostHogSDK.shared.capture("dashboard_loaded", properties: [
-                "show_pro_features": self.showProFeatures,
-                "show_enterprise_features": self.showEnterpriseFeatures,
-                "dashboard_color": self.customDashboardColor.description,
-                "current_plan": userState.plan.rawValue
-            ])
-            
-            // Update the loading state
-            self.isLoadingFeatureFlags = false
+            print("Plan features from feature flag: \(planFeatures)")
+        } else {
+            // Default to standard if no flag is found
+            userState.updatePlan(.standard)
+            self.showProFeatures = false
+            self.showEnterpriseFeatures = false
+            self.customDashboardColor = .blue
+            print("No plan-features flag found, using Standard")
         }
+        
+        // Log the flag evaluation for debugging
+        PostHogSDK.shared.capture("dashboard_loaded", properties: [
+            "show_pro_features": self.showProFeatures,
+            "show_enterprise_features": self.showEnterpriseFeatures,
+            "dashboard_color": self.customDashboardColor.description,
+            "current_plan": userState.plan.rawValue
+        ])
+        
+        // Update the loading state
+        self.isLoadingFeatureFlags = false
     }
     
     // Sample features for each plan level

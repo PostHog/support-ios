@@ -22,9 +22,11 @@ struct support_iosApp: App {
         ) { _ in
             print("Feature flags received from PostHog!")
             
-            // Example of checking a flag after they're loaded
-            if PostHogSDK.shared.isFeatureEnabled("show-pro-features") {
-                print("Pro features are enabled for this user")
+            // Example of checking the plan-features flag
+            if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
+                print("Plan features flag value: \(planFeatures)")
+            } else {
+                print("Plan features flag not found or not enabled")
             }
         }
 
@@ -37,8 +39,8 @@ struct support_iosApp: App {
         config.flushAt = 1  // Setting to 1 for test app to ensure immediate feature flag updates
         config.debug = true  // ✅ Development only
         
-        // Enable feature flags
-        config.preloadFeatureFlags = true  // Preload flags when SDK initializes
+        // Enable feature flags with optimal settings for testing
+        config.preloadFeatureFlags = true                 // Preload flags when SDK initializes
 
         PostHogSDK.shared.setup(config)
     }
