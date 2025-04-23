@@ -11,7 +11,18 @@ import PostHog
 @main
 struct support_iosApp: App {
     init() {
-        let config = PostHogConfig(apiKey: "phc_ddA554Xlja4bfLInShnZnM6b7d3Op1aQAaieWzw3oz7", host: "https://us.i.posthog.com")
+        let POSTHOG_API_KEY = "phc_YjhOo6KO2hwmIAc9PLoCPzlGwUZ4dP3u7gURRB9wTNZ"
+        let POSTHOG_HOST = "https://us.i.posthog.com"
+
+        let config = PostHogConfig(apiKey: POSTHOG_API_KEY, host: POSTHOG_HOST)
+        config.captureApplicationLifecycleEvents = true
+        config.sessionReplay = true
+        config.captureScreenViews = true
+        // capture application lifecycle events (installed, updated, opened, backgrounded)
+        config.captureApplicationLifecycleEvents = true
+        // capture element interactions (button presses, text input changes, etc.)
+        config.captureElementInteractions = true
+
         PostHogSDK.shared.setup(config)
     }
 
@@ -21,4 +32,3 @@ struct support_iosApp: App {
         }
     }
 }
-
