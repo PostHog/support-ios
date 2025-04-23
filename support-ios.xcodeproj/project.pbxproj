@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C172BBE82DB9432D00ABF4F3 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = C172BBE72DB9432D00ABF4F3 /* PostHog */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		C172BBD82DB9420100ABF4F3 /* support-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "support-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C172BBE82DB9432D00ABF4F3 /* PostHog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = "support-ios";
 			packageProductDependencies = (
+				C172BBE72DB9432D00ABF4F3 /* PostHog */,
 			);
 			productName = "support-ios";
 			productReference = C172BBD82DB9420100ABF4F3 /* support-ios.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = C172BBCF2DB9420100ABF4F3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C172BBE62DB9432D00ABF4F3 /* XCRemoteSwiftPackageReference "posthog-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C172BBD92DB9420100ABF4F3 /* Products */;
 			projectDirPath = "";
@@ -320,6 +329,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C172BBE62DB9432D00ABF4F3 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.24.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C172BBE72DB9432D00ABF4F3 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C172BBE62DB9432D00ABF4F3 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C172BBD02DB9420100ABF4F3 /* Project object */;
 }
