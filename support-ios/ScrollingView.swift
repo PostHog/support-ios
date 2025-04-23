@@ -13,66 +13,87 @@ struct ScrollingView: View {
     @State private var planThemeColor = Color.blue
     @State private var planName = "Standard"
     @State private var itemCount = 10 // Base number of items for Standard
+    @State private var isLoading = true
     
     var body: some View {
-        VStack {
-            Text("Scrolling Test")
-                .font(.title)
-                .foregroundColor(planThemeColor)
-            
-            Text("[\(planName) Plan - \(itemCount) Items]")
-                .font(.subheadline)
-                .foregroundColor(planThemeColor)
-                .padding(.bottom, 10)
-            
-            ScrollView {
-                VStack(spacing: 10) {
-                    ForEach(1...itemCount, id: \.self) { i in
-                        ItemRow(index: i, planThemeColor: planThemeColor, planName: planName)
+        ZStack {
+            if isLoading {
+                ProgressView("Loading features...")
+            } else {
+                VStack {
+                    Text("Scrolling Test")
+                        .font(.title)
+                        .foregroundColor(planThemeColor)
+                    
+                    Text("[\(planName) Plan - \(itemCount) Items]")
+                        .font(.subheadline)
+                        .foregroundColor(planThemeColor)
+                        .padding(.bottom, 10)
+                    
+                    ScrollView {
+                        VStack(spacing: 10) {
+                            ForEach(1...itemCount, id: \.self) { i in
+                                ItemRow(index: i, planThemeColor: planThemeColor, planName: planName)
+                            }
+                        }
+                        .padding()
                     }
                 }
+                .background(planThemeColor.opacity(0.05))
+                .cornerRadius(12)
                 .padding()
             }
         }
-        .background(planThemeColor.opacity(0.05))
-        .cornerRadius(12)
-        .padding()
         .onAppear {
-            checkPlanFeatureFlag()
+            isLoading = true
+            DispatchQueue.main.async {
+                checkPlanFeatureFlag()
+            }
+        }
+    }
+    
+    private func checkPlanFeatureFlag() {
+        print("Checking plan feature flag in ScrollingView")
+        
+        // Reload feature flags to ensure we have the latest values
+        PostHogSDK.shared.reloadFeatureFlags()
+        
+        // Add a small delay to ensure the flags are loaded
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            // Check the feature flag that targets based on plan property
+            if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
+                switch planFeatures {
+                case "pro":
+                    planThemeColor = .purple
+                    planName = "Pro"
+                    itemCount = 25 // More items for Pro
+                case "enterprise":
+                    planThemeColor = .green
+                    planName = "Enterprise"
+                    itemCount = 50 // Even more for Enterprise
+                default:
+                    planThemeColor = .blue
+                    planName = "Standard"
+                    itemCount = 10 // Base amount
+                }
+                
+                print("Plan features from feature flag in ScrollingView: \(planFeatures)")
+            } else {
+                // Default to standard plan if no feature flag is found
+                planThemeColor = .blue
+                planName = "Standard"
+                itemCount = 10 // Base amount
+                print("No plan-features flag found in ScrollingView, using Standard")
+            }
             
             // Track view with plan info
             PostHogSDK.shared.capture("scrolling_view_shown", properties: [
                 "plan": planName,
                 "item_count": itemCount
             ])
-        }
-    }
-    
-    private func checkPlanFeatureFlag() {
-        // Check the feature flag that targets based on plan property
-        if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
-            switch planFeatures {
-            case "pro":
-                planThemeColor = .purple
-                planName = "Pro"
-                itemCount = 25 // More items for Pro
-            case "enterprise":
-                planThemeColor = .green
-                planName = "Enterprise"
-                itemCount = 50 // Even more for Enterprise
-            default:
-                planThemeColor = .blue
-                planName = "Standard"
-                itemCount = 10 // Base amount
-            }
             
-            print("Plan features from feature flag: \(planFeatures)")
-        } else {
-            // Default to standard plan if no feature flag is found
-            planThemeColor = .blue
-            planName = "Standard"
-            itemCount = 10 // Base amount
-            print("No plan-features flag found, using Standard")
+            // Update loading state after everything is processed
+            isLoading = false
         }
     }
 }
