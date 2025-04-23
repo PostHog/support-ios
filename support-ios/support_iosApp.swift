@@ -22,6 +22,8 @@ struct support_iosApp: App {
         config.captureApplicationLifecycleEvents = true
         // capture element interactions (button presses, text input changes, etc.)
         config.captureElementInteractions = true
+        config.flushAt = 1
+        config.debug = true
 
         PostHogSDK.shared.setup(config)
     }
