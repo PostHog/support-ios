@@ -15,17 +15,16 @@ struct support_iosApp: App {
         let POSTHOG_HOST = "https://us.i.posthog.com"
 
         let config = PostHogConfig(apiKey: POSTHOG_API_KEY, host: POSTHOG_HOST)
-        config.captureApplicationLifecycleEvents = true
-        config.sessionReplay = true
-        config.captureScreenViews = true
-        // capture application lifecycle events (installed, updated, opened, backgrounded)
-        config.captureApplicationLifecycleEvents = true
-        // capture element interactions (button presses, text input changes, etc.)
+        config.captureApplicationLifecycleEvents = true  // ✅ Recommended for live apps
+        config.captureScreenViews = false                // 🚫 Disable if using SwiftUI
         config.captureElementInteractions = true
-        config.flushAt = 1
-        config.debug = true
+        config.sessionReplay = true
+        config.sessionReplayConfig.screenshotMode = true  // ✅ Required for SwiftUI
+        config.flushAt = 10
+        config.debug = true  // ✅ Development only
 
         PostHogSDK.shared.setup(config)
+
     }
 
     var body: some Scene {
