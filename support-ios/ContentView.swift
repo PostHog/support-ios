@@ -65,7 +65,7 @@ struct ContentView: View {
 
                 Text("Logged Out Mode").font(.title)
 
-                TextField("Type an event name...", text: $eventName)
+                TextField("Type a name for the event...", text: $eventName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding()
 
