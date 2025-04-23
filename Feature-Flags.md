@@ -1,87 +1,148 @@
-# Step-by-Step Testing Guide for PostHog Feature Flags
+# Feature Flags in iOS App
 
-## Initial Setup
+This document explains how we've implemented feature flags in our iOS test application to demonstrate PostHog's feature flagging capabilities.
 
-1. **Launch the app** for the first time
-2. You should be in "Logged Out Mode"
+## Overview
 
-## Test Case 1: Standard User Journey
+We use a feature flag approach to control UI elements and features based on a user's plan level (standard, pro, or enterprise). This allows us to test how consistently feature flags behave across app sessions and during user property changes.
 
-1. **Log in** with username "standard_user" (password doesn't matter)
-2. You should be directed to the dashboard
-3. **Verify initial state**:
-   - Only "Standard Features" section should be visible
-   - Dashboard header should show "Current Plan: Standard" in blue
-4. **Click "Change Plan"** at the top right
-5. **Select the Pro plan** by tapping on it
-6. **Click "Purchase Pro Plan"** button
-7. **Confirm the purchase** in the alert dialog
-8. **Observe the response**:
-   - If "show-upgrade-modal" feature flag is enabled for pro users, a modal should appear
-   - Click "Continue to Dashboard" on the modal
-9. **Verify dashboard updates**:
-   - "Pro Features" section should now be visible if "show-pro-features" flag is enabled
-   - Dashboard header might change color if "dashboard-color" flag is set differently for pro users
+## Implementation Details
 
-## Test Case 2: Enterprise Features
+### 1. Single Target-Based Feature Flag
 
-1. While logged in, **click "Change Plan"** again
-2. **Select the Enterprise plan**
-3. **Click "Purchase Enterprise Plan"** and confirm
-4. **Verify dashboard updates**:
-   - "Enterprise Features" section should appear if "show-enterprise-features" flag is enabled
-   - Dashboard header might change color again if "dashboard-color" is set differently for enterprise users
+We use a single multivariate feature flag called `plan-features` with three possible string values:
 
-## Test Case 3: Feature Flag Consistency
+- `"standard"` - Default tier
+- `"pro"` - Mid-tier
+- `"enterprise"` - Top tier
 
-1. **Log out** using the "Logout" button at the bottom
-2. **Log in again** with the same username you last used
-3. **Verify persistence**:
-   - Dashboard should immediately show the correct features based on your last plan
-   - The upgrade modal should not appear again (it's only for the upgrade flow)
+This flag is targeted based on the user's `plan` property, which is sent with each event and during user identification.
 
-## Test Case 4: Multiple Users with Different Plans
+### 2. Handling Feature Flag Loading
 
-1. **Log out** again
-2. **Log in** with username "pro_user"
-3. **Verify** that Pro features appear immediately (since the identify call sets "plan" to "pro")
-4. **Log out** and **log in** with username "enterprise_user"
-5. **Verify** that both Pro and Enterprise features appear (since the plan is "enterprise")
+A key challenge with feature flags is handling the asynchronous loading process. We've implemented several strategies to ensure UI only renders when feature flags are properly loaded:
 
-## Test Case 5: Feature Flag Reload Testing
+```swift
+private func loadFeatureFlags() {
+    // Start in loading state
+    isLoadingFeatureFlags = true
+    
+    // Explicitly reload feature flags
+    PostHogSDK.shared.reloadFeatureFlags()
+    
+    // Add a slight delay to ensure flags are loaded
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        // Now check the flag value
+        if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
+            // Update UI based on flag value
+            // ...
+        }
+        
+        // Exit loading state when complete
+        isLoadingFeatureFlags = false
+    }
+}
+```
 
-1. While logged in, go to one of the other tabs (Typing, Tapping, or Scrolling)
-2. Change some of the feature flag settings in PostHog dashboard:
-   - Change the targeting rules or rollout percentages
-   - Save the changes
-3. **Return to the Dashboard tab**
-4. The features shown may still reflect the old flags since they're cached
-5. **Pull down to refresh** the dashboard (or add a refresh button if needed)
-6. **Verify** the dashboard updates according to the new flag values
+Each view implements:
+1. A loading state with visual indicator
+2. Explicit feature flag reloading
+3. A small delay to ensure flags are processed
+4. Flag value checking only after this delay
 
-## Test Case 6: Flag Value Types
+### 3. User Login Flow
 
-1. In PostHog, change the "dashboard-color" flag to return different values:
-   - Try "red" for one user segment
-   - Try "green" for another
-2. **Log in** with usernames that match these segments
-3. **Verify** the dashboard header color updates according to the flag value
+When a user logs in, we:
+1. Identify the user without setting a plan property (preserving their existing properties)
+2. Reload feature flags to get the user's stored plan
+3. Display loading indicators while flags are being fetched
 
-## Edge Case Testing
+```swift
+// Identify user without setting plan - we'll get this from PostHog
+PostHogSDK.shared.identify(username, userProperties: [...])
 
-1. **Test with network issues**:
-   - Put device in airplane mode
-   - Log out and back in
-   - Verify the app handles offline flag evaluation gracefully (should use cached values)
+// Flush to ensure the identify call is sent immediately
+PostHogSDK.shared.flush()
 
-2. **Test rapid plan changes**:
-   - Change plans multiple times in quick succession 
-   - Verify the feature flags update correctly after each change
+// Explicitly reload feature flags after login
+PostHogSDK.shared.reloadFeatureFlags()
+```
 
-3. **Test feature flag polling**:
-   - Log in and keep the app open for >30 seconds
-   - Change flag values in PostHog
-   - Wait for the polling interval to complete
-   - Verify updates occur without requiring app restart
+### 4. Plan Change Flow
 
-This testing plan covers the core functionality of your feature flag implementation and verifies that it behaves consistently across different user states and scenarios.
+When a user changes their plan:
+1. Update the plan property via both `identify()` and `capture()` events
+2. Explicitly reload feature flags to refresh values
+3. Check the flag value after reloading
+
+```swift
+// Track the purchase event with plan information
+PostHogSDK.shared.capture("plan_purchased", properties: [
+    "plan": selectedPlan.rawValue // Include plan property
+])
+
+// Update user properties
+PostHogSDK.shared.identify(userState.userId, userProperties: [
+    "plan": selectedPlan.rawValue
+])
+
+// Flush and reload flags
+PostHogSDK.shared.flush()
+PostHogSDK.shared.reloadFeatureFlags()
+```
+
+## PostHog Setup
+
+In PostHog, the `plan-features` flag should be set up as:
+
+1. **Flag Type**: Multivariate String
+2. **Variants**: 
+   - `"standard"` (default)
+   - `"pro"`
+   - `"enterprise"`
+3. **Targeting**:
+   - If `plan` property equals `"pro"` → Return `"pro"` 
+   - If `plan` property equals `"enterprise"` → Return `"enterprise"`
+   - Otherwise return `"standard"`
+
+## UI Implementation
+
+Each view checks the feature flag and updates its interface based on the value:
+
+1. **Dashboard**: Shows/hides pro and enterprise feature sections
+2. **Typing View**: Adds character counting for pro, word counting for enterprise
+3. **Tapping View**: Changes button size and adds statistics for higher plans
+4. **Scrolling View**: Increases the number of items and adds badges for higher plans
+
+Each view also uses a different color theme based on the plan level (blue for standard, purple for pro, green for enterprise).
+
+## Challenges and Solutions
+
+### Race Conditions
+
+The primary challenge was race conditions between UI rendering and flag loading. We solved this by:
+
+1. **Showing Loading States**: Displaying loading spinners during flag loading
+2. **Explicit Timing Control**: Adding small delays to ensure flags are fully processed
+3. **Independent Flag Checking**: Each view handles its own flag loading and checking
+4. **Proper Dispatch Queue Usage**: Using async calls to avoid blocking the main thread
+
+### Flag Reloading
+
+Feature flag values are cached in the iOS SDK. When something changes with a user, flags need to be explicitly reloaded:
+
+```swift
+PostHogSDK.shared.reloadFeatureFlags()
+```
+
+We call this after login, after plan changes, and when views appear to ensure flag values are always current.
+
+## Testing Strategy
+
+Test the following scenarios to verify feature flag behavior:
+
+1. **New User Login**: Should start with standard features
+2. **Plan Upgrade**: Features should update immediately after purchase
+3. **Re-login After Upgrade**: Feature level should persist between sessions
+4. **Tab Switching**: Each tab should independently show the correct features
+5. **Delayed Network**: App should show loading indicators until flags are loaded
