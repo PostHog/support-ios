@@ -86,14 +86,14 @@ struct TappingView: View {
         .cornerRadius(12)
         .padding()
         .onAppear {
-            checkUserPlan()
+            checkPlanFeatureFlag()
         }
     }
     
-    private func checkUserPlan() {
-        // Check for plan feature flag
-        if let userPlan = PostHogSDK.shared.getFeatureFlag("user-plan") as? String {
-            switch userPlan {
+    private func checkPlanFeatureFlag() {
+        // Check the feature flag that targets based on plan property
+        if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
+            switch planFeatures {
             case "pro":
                 planThemeColor = .purple
                 planName = "Pro"
@@ -107,6 +107,14 @@ struct TappingView: View {
                 planName = "Standard"
                 buttonSize = 50 // Standard size
             }
+            
+            print("Plan features from feature flag: \(planFeatures)")
+        } else {
+            // Default to standard plan if no feature flag is found
+            planThemeColor = .blue
+            planName = "Standard"
+            buttonSize = 50 // Standard size
+            print("No plan-features flag found, using Standard")
         }
     }
 }

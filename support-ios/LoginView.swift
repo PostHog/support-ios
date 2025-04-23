@@ -34,64 +34,39 @@ struct LoginView: View {
                     // Update user ID in our state
                     userState.updateUserId(username)
                     
-                    // 🔐 Identify user with initial properties (plan will be updated)
+                    // Set user to standard initially (default state)
+                    userState.updatePlan(.standard)
+                    
+                    // 🔐 Identify user with initial properties
                     PostHogSDK.shared.identify(
                         username,
                         userProperties: [
                             "login_method": "mock",
-                            "role": "tester"
-                            // Plan will be determined by feature flag or set to standard
+                            "role": "tester",
+                            "plan": PlanType.standard.rawValue // Default to standard plan
                         ],
                         userPropertiesSetOnce: [
                             "date_of_first_log_in": ISO8601DateFormatter().string(from: Date())
                         ]
                     )
                     
+                    // Log login event with plan property
+                    PostHogSDK.shared.capture("user_logged_in", properties: [
+                        "plan": PlanType.standard.rawValue
+                    ])
+                    
                     // Flush to ensure the identify call is sent immediately
                     PostHogSDK.shared.flush()
                     
-                    // Reload feature flags to get the user's plan
-                    PostHogSDK.shared.reloadFeatureFlags {
-                        // Check for user plan feature flag
-                        if let userPlan = PostHogSDK.shared.getFeatureFlag("user-plan") as? String,
-                           let planType = PlanType(rawValue: userPlan) {
-                            // Set user plan based on feature flag
-                            userState.updatePlan(planType)
-                            
-                            // Update the plan in PostHog properties
-                            PostHogSDK.shared.identify(
-                                username,
-                                userProperties: [
-                                    "plan": planType.rawValue
-                                ]
-                            )
-                            
-                            print("User plan set from feature flag: \(planType.displayName)")
-                        } else {
-                            // Default to standard plan if no feature flag exists
-                            userState.updatePlan(.standard)
-                            
-                            // Update the plan in PostHog properties
-                            PostHogSDK.shared.identify(
-                                username,
-                                userProperties: [
-                                    "plan": PlanType.standard.rawValue
-                                ]
-                            )
-                            
-                            print("No user plan feature flag found, using standard plan")
-                        }
-                        
-                        // Complete login
-                        isLoggingIn = false
-                        isLoggedIn = true
-                    }
+                    // Complete login - feature flags are already loaded by identify
+                    isLoggingIn = false
+                    isLoggedIn = true
                 }
             }
             .disabled(isLoggingIn)
             
             if isLoggingIn {
-                ProgressView("Loading your plan...")
+                ProgressView("Logging in...")
                     .padding(.top)
             }
         }
