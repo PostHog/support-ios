@@ -19,46 +19,51 @@ struct TypingView: View {
             if isLoading {
                 ProgressView("Loading features...")
             } else {
-                VStack(spacing: 20) {
-                    Text("Typing Test")
-                        .font(.title)
-                        .foregroundColor(planThemeColor)
-                    
-                    Text("[\(planName) Plan Features]")
-                        .font(.subheadline)
-                        .foregroundColor(planThemeColor)
-                        .padding(.bottom, 10)
+                ScrollView {
+                    VStack(spacing: 20) {
+                        Text("Typing Test")
+                            .font(.headline)
+                            .foregroundColor(planThemeColor)
+                        
+                        Text("[\(planName) Plan Features]")
+                            .font(.subheadline)
+                            .foregroundColor(planThemeColor)
+                            .padding(.bottom, 5)
 
-                    TextField("Type something...", text: $input)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding()
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(planThemeColor, lineWidth: 2)
-                                .padding(4)
-                        )
+                        TextField("Type something...", text: $input)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding()
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(planThemeColor, lineWidth: 2)
+                                    .padding(4)
+                            )
 
-                    Text("You typed: \(input)")
-                        .fontWeight(.medium)
-                    
-                    // Pro and above feature
-                    if planName != "Standard" {
-                        Text("Character count: \(input.count)")
-                            .font(.caption)
-                            .padding(.top, 5)
+                        Text("You typed: \(input)")
+                            .fontWeight(.medium)
+                        
+                        // Pro and above feature
+                        if planName != "Standard" {
+                            Text("Character count: \(input.count)")
+                                .font(.caption)
+                                .padding(.top, 5)
+                        }
+                        
+                        // Enterprise only feature
+                        if planName == "Enterprise" {
+                            Text("Word count: \(input.split(separator: " ").count)")
+                                .font(.caption)
+                                .padding(.top, 5)
+                        }
+                        
+                        // Add padding at the bottom
+                        Spacer().frame(height: 50)
                     }
-                    
-                    // Enterprise only feature
-                    if planName == "Enterprise" {
-                        Text("Word count: \(input.split(separator: " ").count)")
-                            .font(.caption)
-                            .padding(.top, 5)
-                    }
+                    .padding()
+                    .background(planThemeColor.opacity(0.05))
+                    .cornerRadius(12)
+                    .padding()
                 }
-                .padding()
-                .background(planThemeColor.opacity(0.05))
-                .cornerRadius(12)
-                .padding()
             }
         }
         .onAppear {

@@ -24,40 +24,46 @@ struct EventTrackingView: View {
             } else {
                 ScrollView {
                     VStack(spacing: 20) {
-                        Text("Tapping Test")
-                            .font(.headline)
-                            .foregroundColor(planThemeColor)
-                        
-                        Text("[\(planName) Plan Experience]")
-                            .font(.subheadline)
-                            .foregroundColor(planThemeColor)
-                        
                         // Main tap button
-                        Button(action: {
-                            count += 1
+                        VStack {
+                            Text("Tapping Test")
+                                .font(.headline)
+                                .foregroundColor(planThemeColor)
                             
-                            // 🔥 Custom PostHog event
-                            PostHogSDK.shared.capture("Button Tapped", properties: [
-                                "count": count,
-                                "plan": planName
-                            ])
-                        }) {
-                            ZStack {
-                                Circle()
-                                    .fill(planThemeColor)
-                                    .frame(width: buttonSize, height: buttonSize)
-                                    .shadow(color: planThemeColor.opacity(0.5), radius: 10, x: 0, y: 5)
+                            Text("[\(planName) Plan Experience]")
+                                .font(.subheadline)
+                                .foregroundColor(planThemeColor)
+                                .padding(.bottom, 10)
+                            
+                            Button(action: {
+                                count += 1
                                 
-                                Image(systemName: "hand.tap.fill")
-                                    .font(.system(size: buttonSize * 0.4))
-                                    .foregroundColor(.white)
+                                // 🔥 Custom PostHog event
+                                PostHogSDK.shared.capture("Button Tapped", properties: [
+                                    "count": count,
+                                    "plan": planName
+                                ])
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(planThemeColor)
+                                        .frame(width: buttonSize, height: buttonSize)
+                                        .shadow(color: planThemeColor.opacity(0.5), radius: 10, x: 0, y: 5)
+                                    
+                                    Image(systemName: "hand.tap.fill")
+                                        .font(.system(size: buttonSize * 0.4))
+                                        .foregroundColor(.white)
+                                }
                             }
+                            .padding()
+                            
+                            Text("Tapped \(count) times")
+                                .font(.title2)
+                                .fontWeight(.medium)
                         }
                         .padding()
-                        
-                        Text("Tapped \(count) times")
-                            .font(.title2)
-                            .fontWeight(.medium)
+                        .background(planThemeColor.opacity(0.05))
+                        .cornerRadius(12)
                         
                         // Pro plan feature - tap history
                         if planName != "Standard" {
@@ -90,9 +96,6 @@ struct EventTrackingView: View {
                         // Add padding at the bottom to ensure content doesn't get hidden
                         Spacer().frame(height: 50)
                     }
-                    .padding()
-                    .background(planThemeColor.opacity(0.05))
-                    .cornerRadius(12)
                     .padding()
                 }
                 .overlay(
