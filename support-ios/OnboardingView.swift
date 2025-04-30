@@ -47,43 +47,55 @@ struct OnboardingView: View {
             AppDesign.Colors.background
                 .ignoresSafeArea()
             
-            VStack {
-                // Header
-                headerView
-                
-                Spacer() // Push content toward center
-                
-                // Feature carousel in center
-                TabView(selection: $currentPage) {
-                    ForEach(0..<features.count, id: \.self) { index in
-                        featureCard(features[index])
-                            .tag(index)
-                    }
-                    
-                    // Final card
-                    getStartedCard
-                        .tag(features.count)
-                }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-                .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
-                .frame(height: 320)
-                
-                Spacer() // Maintain center position
-                
-                // Navigation buttons are fixed at bottom
+            if currentPage == features.count && isPresentingUsername {
+                // Show only the username form when "Get Started" is clicked
                 VStack {
-                    navigationButtons
+                    // Header
+                    headerView
                     
-                    // Username input (only on last page)
-                    if currentPage == features.count && isPresentingUsername {
-                        usernameInputView
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
-                            .animation(.easeInOut, value: isPresentingUsername)
-                    }
+                    Spacer()
+                    
+                    // Username input form
+                    usernameInputView
+                    
+                    Spacer()
                 }
-                .padding(.bottom, AppDesign.Spacing.small)
+                .padding(AppDesign.Spacing.medium)
+                .transition(.opacity)
+                .animation(.easeInOut, value: isPresentingUsername)
+            } else {
+                // Normal onboarding flow
+                VStack {
+                    // Header
+                    headerView
+                    
+                    Spacer() // Push content toward center
+                    
+                    // Feature carousel in center
+                    TabView(selection: $currentPage) {
+                        ForEach(0..<features.count, id: \.self) { index in
+                            featureCard(features[index])
+                                .tag(index)
+                        }
+                        
+                        // Final card
+                        getStartedCard
+                            .tag(features.count)
+                    }
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+                    .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+                    .frame(height: 320)
+                    
+                    Spacer() // Maintain center position
+                    
+                    // Navigation buttons are fixed at bottom
+                    VStack {
+                        navigationButtons
+                    }
+                    .padding(.bottom, AppDesign.Spacing.small)
+                }
+                .padding(AppDesign.Spacing.medium)
             }
-            .padding(AppDesign.Spacing.medium)
         }
         .onAppear {
             // Track onboarding view
@@ -237,10 +249,11 @@ struct OnboardingView: View {
     }
     
     private var usernameInputView: some View {
-        VStack(spacing: AppDesign.Spacing.small) {
+        VStack(spacing: AppDesign.Spacing.medium) {
             Text("Create your profile")
-                .font(AppDesign.Typography.headline)
+                .font(AppDesign.Typography.titleText)
                 .foregroundColor(AppDesign.Colors.text)
+                .padding(.bottom, AppDesign.Spacing.small)
             
             TextField("Your username", text: $username)
                 .padding()
@@ -262,9 +275,21 @@ struct OnboardingView: View {
             .primaryButton()
             .disabled(username.isEmpty)
             .opacity(username.isEmpty ? 0.7 : 1.0)
+            
+            // Back button
+            Button(action: {
+                isPresentingUsername = false
+            }) {
+                Text("Back")
+                    .padding(.top, AppDesign.Spacing.medium)
+            }
+            .ghostButton()
         }
-        .padding()
-        .cardStyle()
+        .padding(AppDesign.Spacing.large)
+        .background(AppDesign.Colors.card)
+        .cornerRadius(AppDesign.Radius.large)
+        .shadow(color: AppDesign.Shadows.medium, radius: AppDesign.Shadows.mediumRadius, x: 0, y: 2)
+        .padding(.horizontal, AppDesign.Spacing.medium)
     }
     
     private func completeOnboarding() {
