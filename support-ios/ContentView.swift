@@ -154,6 +154,9 @@ struct ContentView: View {
             }
             .accentColor(AppDesign.Colors.primaryOrange)
             .environmentObject(userState)
+            .onAppear {
+                setupDashboardNavigation()
+            }
         } else {
             // ✅ Logged-out experience: Login screen
             ZStack {
@@ -281,6 +284,17 @@ struct ContentView: View {
         
         // Show feedback
         eventName = ""
+    }
+    
+    private func setupDashboardNavigation() {
+        // Listen for dashboard navigation notifications
+        NotificationCenter.default.addObserver(
+            forName: .navigateToDashboard,
+            object: nil,
+            queue: .main
+        ) { _ in
+            selectedTab = 2 // Dashboard tab index
+        }
     }
 }
 
