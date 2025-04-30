@@ -9,6 +9,12 @@ struct FeatureFlagsExampleView: View {
     @State private var textColor: Color = .primary
     @State private var buttonStyle: String = "Standard"
     
+    // Define actual feature flag keys - these are the exact keys to use in PostHog
+    private let featureAFlagKey = "ios-feature-a"
+    private let featureBFlagKey = "ios-feature-b"
+    private let textColorFlagKey = "ios-text-color"
+    private let buttonStyleFlagKey = "ios-button-style"
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -32,7 +38,7 @@ struct FeatureFlagsExampleView: View {
                         Text("Live Example")
                             .font(.headline)
                         
-                        Text("This screen is reading real feature flags. Your current plan (\(userState.plan.displayName)) determines what you see.")
+                        Text("This screen is reading real feature flags from PostHog. Your current plan (\(userState.plan.displayName)) determines what you see.")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -46,17 +52,17 @@ struct FeatureFlagsExampleView: View {
                     VStack(spacing: 24) {
                         // UI controlled by feature flags
                         featureFlagCard(
-                            title: "Feature A",
+                            title: "Premium Analytics",
                             description: "This feature is \(showFeatureA ? "enabled" : "disabled") for your plan",
                             isEnabled: showFeatureA,
-                            flagName: "feature-a"
+                            flagName: featureAFlagKey
                         )
                         
                         featureFlagCard(
-                            title: "Feature B",
+                            title: "Custom Dashboards",
                             description: "This feature is \(showFeatureB ? "enabled" : "disabled") for your plan",
                             isEnabled: showFeatureB,
-                            flagName: "feature-b"
+                            flagName: featureBFlagKey
                         )
                         
                         // UI styling controlled by feature flags
@@ -68,14 +74,14 @@ struct FeatureFlagsExampleView: View {
                                 .font(.subheadline)
                                 .foregroundColor(textColor)
                             
-                            Button("Button Style: \(buttonStyle)") {
+                            Button("Reload Feature Flags") {
                                 reloadFeatureFlags()
                             }
                             .padding()
                             .background(userState.plan.color)
                             .foregroundColor(.white)
-                            .cornerRadius(buttonStyle == "Rounded" ? 20 : 8)
-                            .shadow(radius: buttonStyle == "Shadowed" ? 5 : 0)
+                            .cornerRadius(buttonStyle == "rounded" ? 20 : 8)
+                            .shadow(radius: buttonStyle == "shadowed" ? 5 : 0)
                         }
                         .padding()
                         .background(Color(.systemBackground))
@@ -84,15 +90,33 @@ struct FeatureFlagsExampleView: View {
                         .padding(.horizontal)
                     }
                     
-                    // Code example
+                    // Flag details
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Swift Implementation")
+                        Text("How These Feature Flags Work")
                             .font(.headline)
                         
-                        Text("Here's how to implement feature flags in Swift:")
+                        Text("These feature flags use the following targeting rules:")
                             .font(.subheadline)
                         
-                        codeExample
+                        flagDescription(
+                            name: featureAFlagKey,
+                            description: "Boolean flag enabled based on user plan (Pro and Enterprise)"
+                        )
+                        
+                        flagDescription(
+                            name: featureBFlagKey,
+                            description: "Boolean flag enabled only for Enterprise plan users"
+                        )
+                        
+                        flagDescription(
+                            name: textColorFlagKey,
+                            description: "String flag with possible values: 'blue', 'green', 'purple', 'default'"
+                        )
+                        
+                        flagDescription(
+                            name: buttonStyleFlagKey,
+                            description: "String flag with possible values: 'standard', 'rounded', 'shadowed'"
+                        )
                     }
                     .padding()
                     .background(Color(.systemBackground))
@@ -133,7 +157,7 @@ struct FeatureFlagsExampleView: View {
             
             Divider()
             
-            Text("Flag name: \(flagName)")
+            Text("Flag key: \(flagName)")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -144,93 +168,49 @@ struct FeatureFlagsExampleView: View {
         .padding(.horizontal)
     }
     
-    private var codeExample: some View {
+    private func flagDescription(name: String, description: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("// Check a boolean feature flag")
-                .font(.system(.caption, design: .monospaced))
+            Text(name)
+                .font(.system(.subheadline, design: .monospaced))
+                .bold()
+            
+            Text(description)
+                .font(.caption)
                 .foregroundColor(.secondary)
-            
-            Text("if let isEnabled = PostHogSDK.shared.getFeatureFlag(\"feature-a\") as? Bool, isEnabled {")
-                .font(.system(.caption, design: .monospaced))
-            
-            Text("    // The feature is enabled for this user")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundColor(.secondary)
-                .padding(.leading, 16)
-            
-            Text("}")
-                .font(.system(.caption, design: .monospaced))
-            
-            Text("")
-                .font(.system(.caption, design: .monospaced))
-            
-            Text("// Check a string feature flag")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundColor(.secondary)
-            
-            Text("if let variant = PostHogSDK.shared.getFeatureFlag(\"plan-features\") as? String {")
-                .font(.system(.caption, design: .monospaced))
-            
-            Text("    switch variant {")
-                .font(.system(.caption, design: .monospaced))
-                .padding(.leading, 16)
-            
-            Text("    case \"pro\", \"enterprise\":")
-                .font(.system(.caption, design: .monospaced))
-                .padding(.leading, 32)
-            
-            Text("        // Enable premium features")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundColor(.secondary)
-                .padding(.leading, 48)
-            
-            Text("    default:")
-                .font(.system(.caption, design: .monospaced))
-                .padding(.leading, 32)
-            
-            Text("        // Standard features only")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundColor(.secondary)
-                .padding(.leading, 48)
-            
-            Text("    }")
-                .font(.system(.caption, design: .monospaced))
-                .padding(.leading, 16)
-            
-            Text("}")
-                .font(.system(.caption, design: .monospaced))
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(8)
+        .padding(.vertical, 6)
     }
     
     private func loadFeatureFlags() {
         isLoadingFeatureFlags = true
         
-        // Explicitly reload feature flags to ensure we have the latest values
-        PostHogSDK.shared.reloadFeatureFlags()
+        // Log the current user information
+        print("Loading feature flags for user: \(userState.userId), plan: \(userState.plan.rawValue)")
         
-        // Add a slight delay to ensure flags are loaded
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Feature A flag
-            if let featureA = PostHogSDK.shared.getFeatureFlag("feature-a") as? Bool {
-                self.showFeatureA = featureA
-            } else {
-                // Fallback based on plan
-                self.showFeatureA = userState.plan != .standard
+        // Explicitly reload feature flags to ensure we have the latest values
+        PostHogSDK.shared.reloadFeatureFlags {
+            // IMPORTANT: Check feature flags properly
+            
+            // Feature A flag - Premium Analytics
+            self.showFeatureA = PostHogSDK.shared.isFeatureEnabled(self.featureAFlagKey)
+            print("Feature A flag (\(self.featureAFlagKey)) enabled: \(self.showFeatureA)")
+            
+            // Check if there's a payload for more information
+            if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.featureAFlagKey) {
+                print("Feature A payload: \(payload)")
             }
             
-            // Feature B flag
-            if let featureB = PostHogSDK.shared.getFeatureFlag("feature-b") as? Bool {
-                self.showFeatureB = featureB
-            } else {
-                // Fallback based on plan
-                self.showFeatureB = userState.plan == .enterprise
+            // Feature B flag - Custom Dashboards
+            self.showFeatureB = PostHogSDK.shared.isFeatureEnabled(self.featureBFlagKey)
+            print("Feature B flag (\(self.featureBFlagKey)) enabled: \(self.showFeatureB)")
+            
+            if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.featureBFlagKey) {
+                print("Feature B payload: \(payload)")
             }
             
-            // Text color flag
-            if let textColorValue = PostHogSDK.shared.getFeatureFlag("text-color") as? String {
+            // Text color flag - requires retrieving the value
+            if let textColorValue = PostHogSDK.shared.getFeatureFlag(self.textColorFlagKey) as? String {
+                print("Text color flag value: \(textColorValue)")
                 switch textColorValue {
                 case "blue":
                     self.textColor = .blue
@@ -241,25 +221,54 @@ struct FeatureFlagsExampleView: View {
                 default:
                     self.textColor = .primary
                 }
+                
+                if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.textColorFlagKey) {
+                    print("Text color payload: \(payload)")
+                }
             } else {
                 // Fallback based on plan
-                self.textColor = userState.plan.color
+                self.textColor = self.userState.plan.color
+                print("Text color flag not found, using fallback based on plan color")
             }
             
-            // Button style flag
-            if let buttonStyleValue = PostHogSDK.shared.getFeatureFlag("button-style") as? String {
+            // Button style flag - requires retrieving the value
+            if let buttonStyleValue = PostHogSDK.shared.getFeatureFlag(self.buttonStyleFlagKey) as? String {
+                print("Button style flag value: \(buttonStyleValue)")
                 self.buttonStyle = buttonStyleValue
+                
+                if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.buttonStyleFlagKey) {
+                    print("Button style payload: \(payload)")
+                }
             } else {
                 // Fallback based on plan
-                switch userState.plan {
+                switch self.userState.plan {
                 case .enterprise:
-                    self.buttonStyle = "Shadowed"
+                    self.buttonStyle = "shadowed"
                 case .pro:
-                    self.buttonStyle = "Rounded"
+                    self.buttonStyle = "rounded"
                 case .standard:
-                    self.buttonStyle = "Standard"
+                    self.buttonStyle = "standard"
                 }
+                print("Button style flag not found, using fallback based on plan: \(self.buttonStyle)")
             }
+            
+            // Print debugging information for individual flags
+            print("--------- FEATURE FLAG STATUS ---------")
+            print("Feature A (\(self.featureAFlagKey)): \(self.showFeatureA)")
+            print("Feature B (\(self.featureBFlagKey)): \(self.showFeatureB)")
+            print("Text Color (\(self.textColorFlagKey)): \(self.textColor)")
+            print("Button Style (\(self.buttonStyleFlagKey)): \(self.buttonStyle)")
+            print("--------------------------------------")
+            
+            // Log all feature flag evaluations for debugging
+            PostHogSDK.shared.capture("feature_flags_evaluated", properties: [
+                "feature_a_enabled": self.showFeatureA,
+                "feature_b_enabled": self.showFeatureB, 
+                "text_color_value": self.textColor.description,
+                "button_style_value": self.buttonStyle,
+                "current_plan": self.userState.plan.rawValue,
+                "current_user": self.userState.userId
+            ])
             
             // Update the loading state after everything is processed
             self.isLoadingFeatureFlags = false
@@ -275,7 +284,8 @@ struct FeatureFlagsExampleView: View {
         // Reload the flags
         loadFeatureFlags()
         
-        // Capture the event
-        PostHogSDK.shared.capture("feature_flags_reloaded")
+        // Capture the reload event
+        PostHogSDK.shared.capture("feature_flags_manually_reloaded")
+        PostHogSDK.shared.flush()
     }
 } 
