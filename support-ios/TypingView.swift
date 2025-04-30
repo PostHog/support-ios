@@ -77,35 +77,30 @@ struct TypingView: View {
     private func checkPlanFeatureFlag() {
         print("Checking plan feature flag in TypingView")
         
-        // Reload feature flags to ensure we have the latest values
-        PostHogSDK.shared.reloadFeatureFlags()
-        
-        // Add a small delay to ensure the flags are loaded
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Check the feature flag that targets based on plan property
-            if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
-                switch planFeatures {
-                case "pro":
-                    planThemeColor = .purple
-                    planName = "Pro"
-                case "enterprise":
-                    planThemeColor = .green
-                    planName = "Enterprise"
-                default:
-                    planThemeColor = .blue
-                    planName = "Standard"
-                }
-                
-                print("Plan features from feature flag in TypingView: \(planFeatures)")
-            } else {
-                // Default to standard plan if no feature flag is found
+        // POSTHOG: Simply check feature flag value without reloading
+        // Flags are now centrally managed and reloaded only when user properties change
+        if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
+            switch planFeatures {
+            case "pro":
+                planThemeColor = .purple
+                planName = "Pro"
+            case "enterprise":
+                planThemeColor = .green
+                planName = "Enterprise"
+            default:
                 planThemeColor = .blue
                 planName = "Standard"
-                print("No plan-features flag found in TypingView, using Standard")
             }
             
-            // Update loading state after everything is processed
-            isLoading = false
+            print("Plan features from feature flag in TypingView: \(planFeatures)")
+        } else {
+            // Default to standard plan if no feature flag is found
+            planThemeColor = .blue
+            planName = "Standard"
+            print("No plan-features flag found in TypingView, using Standard")
         }
+        
+        // Update loading state after everything is processed
+        isLoading = false
     }
 }

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import PostHog
 
 enum PlanType: String, CaseIterable, Identifiable {
     case standard
@@ -61,5 +62,20 @@ class UserState: ObservableObject {
     func updateUserId(_ newId: String) {
         userId = newId
         storedUserId = newId
+    }
+}
+
+/// Static helper class to manage feature flag operations
+class FeatureFlagManager {
+    
+    /// Reload feature flags only when critical user properties change
+    /// Should only be called on login or when plan changes
+    static func reloadFeatureFlags(completion: (() -> Void)? = nil) {
+        PostHogSDK.shared.reloadFeatureFlags {
+            print("Feature flags reloaded centrally after user property change")
+            
+            // Call the completion handler if provided
+            completion?()
+        }
     }
 } 

@@ -202,7 +202,8 @@ struct ContentView: View {
                         withAnimation {
                             showLoginForm.toggle()
                         }
-                        // Track login button press
+                        // POSTHOG: Track login button clicks with a custom event
+                        // This helps analyze how many users attempt to log in
                         PostHogSDK.shared.capture("login_button_clicked")
                     }) {
                         HStack {
@@ -256,6 +257,8 @@ struct ContentView: View {
     private func trackTabChange() {
         let tabNames = ["Home", "Features", "Dashboard", "Typing", "Tapping", "Scrolling"]
         if selectedTab < tabNames.count {
+            // POSTHOG: Track tab navigation with tab name and index
+            // This helps understand which sections of the app are most frequently used
             PostHogSDK.shared.capture("tab_switched", properties: [
                 "tab": tabNames[selectedTab],
                 "tab_index": selectedTab
@@ -264,13 +267,15 @@ struct ContentView: View {
     }
     
     private func logout() {
-        // Reset PostHog user identification
+        // POSTHOG: Reset user identification when logging out
+        // This clears the current user's identity and starts a new anonymous session
         PostHogSDK.shared.reset()
         
         // Reset user state to standard plan
         userState.updatePlan(.standard)
         
-        // Log the logout event
+        // POSTHOG: Log the logout event before user state changes
+        // The flush ensures the event is sent immediately before app state changes
         PostHogSDK.shared.capture("user_logged_out")
         PostHogSDK.shared.flush()
         
@@ -280,6 +285,8 @@ struct ContentView: View {
     
     private func sendTestEvent() {
         let name = eventName.isEmpty ? "generic_test_event" : eventName
+        // POSTHOG: Send custom event with user-defined name
+        // This demonstrates the flexibility of custom event tracking
         PostHogSDK.shared.capture(name)
         
         // Show feedback
@@ -296,7 +303,8 @@ struct ContentView: View {
             // First navigate to dashboard tab
             selectedTab = 2 // Dashboard tab index
             
-            // Track the navigation
+            // POSTHOG: Track navigation to dashboard with source context
+            // This helps understand navigation patterns and feature usage
             PostHogSDK.shared.capture("navigated_to_dashboard", properties: [
                 "source": "upgrade_flow",
                 "plan": userState.plan.rawValue
