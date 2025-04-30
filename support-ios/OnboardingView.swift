@@ -51,9 +51,9 @@ struct OnboardingView: View {
                 // Header
                 headerView
                 
-                Spacer() // Push all content down
+                Spacer() // Push content toward center
                 
-                // Feature carousel
+                // Feature carousel in center
                 TabView(selection: $currentPage) {
                     ForEach(0..<features.count, id: \.self) { index in
                         featureCard(features[index])
@@ -68,16 +68,20 @@ struct OnboardingView: View {
                 .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
                 .frame(height: 320)
                 
-                // Navigation buttons
-                navigationButtons
-                    .padding(.vertical, AppDesign.Spacing.medium)
+                Spacer() // Maintain center position
                 
-                // Username input (only on last page)
-                if currentPage == features.count && isPresentingUsername {
-                    usernameInputView
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                        .animation(.easeInOut, value: isPresentingUsername)
+                // Navigation buttons are fixed at bottom
+                VStack {
+                    navigationButtons
+                    
+                    // Username input (only on last page)
+                    if currentPage == features.count && isPresentingUsername {
+                        usernameInputView
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .animation(.easeInOut, value: isPresentingUsername)
+                    }
                 }
+                .padding(.bottom, AppDesign.Spacing.small)
             }
             .padding(AppDesign.Spacing.medium)
         }
