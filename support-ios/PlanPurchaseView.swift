@@ -78,6 +78,7 @@ struct PlanPurchaseView: View {
         }
         .sheet(isPresented: $showUpgradeModal) {
             UpgradeModalView(plan: selectedPlan)
+                .environmentObject(userState)
         }
     }
     
@@ -200,6 +201,7 @@ struct PlanCard: View {
 struct UpgradeModalView: View {
     let plan: PlanType
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var userState: UserState
     
     var body: some View {
         VStack(spacing: 20) {
@@ -222,7 +224,17 @@ struct UpgradeModalView: View {
                 .padding(.horizontal)
             
             Button("Continue to Dashboard") {
+                // Track that user clicked on dashboard button
+                PostHogSDK.shared.capture("upgrade_dashboard_clicked")
+                
+                // First dismiss this modal
                 dismiss()
+                
+                // Give time for dismiss to complete before dismissing parent
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    // Then dismiss the plan purchase view and go to dashboard
+                    NotificationCenter.default.post(name: .navigateToDashboard, object: nil)
+                }
             }
             .padding()
             .frame(maxWidth: .infinity)
@@ -243,4 +255,9 @@ struct UpgradeModalView: View {
             ])
         }
     }
+}
+
+// Add notification name for dashboard navigation
+extension Notification.Name {
+    static let navigateToDashboard = Notification.Name("navigateToDashboard")
 } 
