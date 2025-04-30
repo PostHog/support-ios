@@ -57,7 +57,7 @@ struct FeatureShowcaseView: View {
                 description: "Control feature access and run experiments with targeted rollouts",
                 icon: "switch.2",
                 color: AppDesign.Colors.pro,
-                destinationView: AnyView(DashboardView()),
+                destinationView: AnyView(FeatureFlagsExampleView()),
                 requiredPlan: .pro
             ),
             ShowcaseFeature(
@@ -71,7 +71,7 @@ struct FeatureShowcaseView: View {
             ShowcaseFeature(
                 title: "Funnels & Retention",
                 description: "Analyze user journeys and measure how well you retain users",
-                icon: "chart.funnel.fill",
+                icon: "chart.xyaxis.line",
                 color: AppDesign.Colors.enterprise,
                 destinationView: AnyView(Text("Funnels & Retention")),
                 requiredPlan: .enterprise
