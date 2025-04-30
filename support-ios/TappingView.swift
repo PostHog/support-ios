@@ -9,7 +9,7 @@
 import SwiftUI
 import PostHog
 
-struct TappingView: View {
+struct EventTrackingView: View {
     @State private var count = 0
     @State private var planThemeColor = Color.blue
     @State private var planName = "Standard"
@@ -24,30 +24,6 @@ struct TappingView: View {
             } else {
                 ScrollView {
                     VStack(spacing: 20) {
-                        Text("Event Tracking")
-                            .font(.title)
-                            .foregroundColor(planThemeColor)
-                        
-                        Text("Track user actions and custom events to understand how your app is used")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                        
-                        // Info banner
-                        HStack {
-                            Image(systemName: "lightbulb.fill")
-                                .foregroundColor(.blue)
-                            
-                            Text("This screen demonstrates how to implement event tracking with PostHog")
-                                .font(.caption)
-                                .foregroundColor(.primary)
-                        }
-                        .padding()
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(8)
-                        .padding(.bottom, 10)
-                        
                         Text("Tapping Test")
                             .font(.headline)
                             .foregroundColor(planThemeColor)
@@ -125,7 +101,7 @@ struct TappingView: View {
                             VStack {
                                 Spacer()
                                 
-                                LottieView()
+                                AnimationView()
                                     .frame(width: 200, height: 200)
                                     .transition(.scale)
                                 
@@ -160,7 +136,7 @@ struct TappingView: View {
     }
     
     // A simple animation view
-    struct LottieView: View {
+    struct AnimationView: View {
         @State private var animationAmount = 1.0
         
         var body: some View {
@@ -194,7 +170,7 @@ struct TappingView: View {
     }
     
     private func checkPlanFeatureFlag() {
-        print("Checking plan feature flag in TappingView")
+        print("Checking plan feature flag in EventTrackingView")
         
         // Reload feature flags to ensure we have the latest values
         PostHogSDK.shared.reloadFeatureFlags()
@@ -218,17 +194,24 @@ struct TappingView: View {
                     buttonSize = 50 // Standard size
                 }
                 
-                print("Plan features from feature flag in TappingView: \(planFeatures)")
+                print("Plan features from feature flag in EventTrackingView: \(planFeatures)")
             } else {
                 // Default to standard plan if no feature flag is found
                 planThemeColor = .blue
                 planName = "Standard"
                 buttonSize = 50 // Standard size
-                print("No plan-features flag found in TappingView, using Standard")
+                print("No plan-features flag found in EventTrackingView, using Standard")
             }
             
             // Update loading state after everything is processed
             isLoading = false
         }
+    }
+}
+
+// Keep TappingView for backward compatibility
+struct TappingView: View {
+    var body: some View {
+        EventTrackingView()
     }
 }

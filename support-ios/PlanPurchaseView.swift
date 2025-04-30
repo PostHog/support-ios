@@ -77,8 +77,12 @@ struct PlanPurchaseView: View {
             Text("Would you like to purchase the \(selectedPlan.displayName) plan for $\(selectedPlan.price)/month?")
         }
         .sheet(isPresented: $showUpgradeModal) {
-            UpgradeModalView(plan: selectedPlan)
+            UpgradeModalView(plan: selectedPlan, dismissParentView: $showUpgradeModal)
                 .environmentObject(userState)
+        }
+        .onDisappear {
+            // Clean up any observers when view disappears
+            NotificationCenter.default.removeObserver(self)
         }
     }
     
@@ -121,6 +125,13 @@ struct PlanPurchaseView: View {
             if selectedPlan == .pro || selectedPlan == .enterprise {
                 showUpgradeModal = true
             } else {
+                dismiss()
+            }
+        }
+        
+        // Listen for notification to dismiss this view when dashboard is shown
+        NotificationCenter.default.addObserver(forName: .navigateToDashboard, object: nil, queue: .main) { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 dismiss()
             }
         }
@@ -202,6 +213,7 @@ struct UpgradeModalView: View {
     let plan: PlanType
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var userState: UserState
+    @Binding var dismissParentView: Bool
     
     var body: some View {
         VStack(spacing: 20) {
@@ -230,9 +242,12 @@ struct UpgradeModalView: View {
                 // First dismiss this modal
                 dismiss()
                 
-                // Give time for dismiss to complete before dismissing parent
+                // Give time for dismiss to complete before dismissing parent and navigating
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    // Then dismiss the plan purchase view and go to dashboard
+                    // Set flag to dismiss parent view
+                    dismissParentView = true
+                    
+                    // Then navigate to dashboard
                     NotificationCenter.default.post(name: .navigateToDashboard, object: nil)
                 }
             }

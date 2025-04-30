@@ -35,7 +35,7 @@ struct FeatureShowcaseView: View {
                 description: "Track user actions and custom events to understand how your app is used",
                 icon: "chart.bar",
                 color: AppDesign.Colors.standard,
-                destinationView: AnyView(TappingView())
+                destinationView: AnyView(EventTrackingView())
             ),
             ShowcaseFeature(
                 title: "User Properties",

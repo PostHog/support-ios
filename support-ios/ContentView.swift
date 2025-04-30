@@ -293,7 +293,14 @@ struct ContentView: View {
             object: nil,
             queue: .main
         ) { _ in
+            // First navigate to dashboard tab
             selectedTab = 2 // Dashboard tab index
+            
+            // Track the navigation
+            PostHogSDK.shared.capture("navigated_to_dashboard", properties: [
+                "source": "upgrade_flow",
+                "plan": userState.plan.rawValue
+            ])
         }
     }
 }
