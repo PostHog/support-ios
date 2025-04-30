@@ -47,6 +47,21 @@ struct support_iosApp: App {
 
     var body: some Scene {
         WindowGroup {
+            MainView()
+                .preferredColorScheme(.light) // Use light mode by default for demo
+        }
+    }
+}
+
+/// Main container view that handles app flow
+struct MainView: View {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("isLoggedIn") private var isLoggedIn = false
+    
+    var body: some View {
+        if !hasCompletedOnboarding {
+            OnboardingView()
+        } else {
             ContentView()
         }
     }
