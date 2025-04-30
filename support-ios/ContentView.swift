@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var selectedTab = 0
     @State private var showLoginForm = false
     @State private var eventName = ""
+    @State private var showFeatureExplorer = false
 
     var body: some View {
         if isLoggedIn {
@@ -63,7 +64,9 @@ struct ContentView: View {
                         .padding()
                         
                         // Feature quick links
-                        NavigationLink(destination: FeatureShowcaseView()) {
+                        Button(action: {
+                            showFeatureExplorer = true
+                        }) {
                             HStack {
                                 Image(systemName: "sparkles")
                                     .font(.system(size: 24))
@@ -91,6 +94,10 @@ struct ContentView: View {
                     .background(AppDesign.Colors.background)
                     .navigationTitle("Home")
                     .navigationBarTitleDisplayMode(.inline)
+                    .sheet(isPresented: $showFeatureExplorer) {
+                        FeatureShowcaseView()
+                            .environmentObject(userState)
+                    }
                 }
                 .tabItem {
                     Label("Home", systemImage: "house")
