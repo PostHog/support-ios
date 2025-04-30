@@ -11,6 +11,7 @@ This is a SwiftUI iOS app used for testing PostHog features and demonstrating be
 - ✅ **Feature Flags** - Multiple flag types (boolean, string) with proper fallbacks
 - ✅ **User Identification** - User properties and plan-based segmentation
 - ✅ **Event Properties** - Contextual data sent with events to provide richer analytics
+- ✅ **Optimized Flag Reloading** - Centralized feature flag management for performance
 
 ## Demo Views
 
@@ -88,4 +89,28 @@ PostHogSDK.shared.setup(config)
 5. **Session Replay Configuration** - Uses screenshot mode for SwiftUI compatibility
 6. **User Property Targeting** - Shows how to use plan-based targeting for features
 7. **Clean Lifecycle Management** - Proper user reset on logout
-8. **Explicit Flag Reloading** - Demonstrates when to explicitly refresh flags
+8. **Optimized Flag Reloading** - Only reloads flags when user properties change (login, plan changes)
+
+## Feature Flag Optimization
+
+For optimal performance, the app uses a centralized approach to feature flag management:
+
+1. **When to reload flags** - Only reloads feature flags when critical user properties change:
+   - After user login
+   - After plan changes
+   
+2. **Centralized reloading** - Uses a dedicated `FeatureFlagManager` class to handle reloading:
+   ```swift
+   FeatureFlagManager.reloadFeatureFlags {
+       // Code to run after flags are loaded
+   }
+   ```
+
+3. **Simple flag reading** - All UI components simply read the current flag values without reloading:
+   ```swift
+   if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
+       // Apply UI changes based on the flag value
+   }
+   ```
+   
+This approach ensures that flags are always up-to-date while minimizing unnecessary network requests.

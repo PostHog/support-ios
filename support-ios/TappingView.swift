@@ -179,42 +179,35 @@ struct EventTrackingView: View {
     private func checkPlanFeatureFlag() {
         print("Checking plan feature flag in EventTrackingView")
         
-        // POSTHOG: Reload feature flags to ensure we have the latest values
-        // This is especially important after the app has been in the background
-        PostHogSDK.shared.reloadFeatureFlags()
-        
-        // Add a small delay to ensure the flags are loaded
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // POSTHOG: Check feature flag that determines user plan
-            // This is an example of using feature flags to control feature access
-            if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
-                switch planFeatures {
-                case "pro":
-                    planThemeColor = .purple
-                    planName = "Pro"
-                    buttonSize = 70 // Bigger button for Pro
-                case "enterprise":
-                    planThemeColor = .green
-                    planName = "Enterprise"
-                    buttonSize = 90 // Even bigger for Enterprise
-                default:
-                    planThemeColor = .blue
-                    planName = "Standard"
-                    buttonSize = 50 // Standard size
-                }
-                
-                print("Plan features from feature flag in EventTrackingView: \(planFeatures)")
-            } else {
-                // Default to standard plan if no feature flag is found
+        // POSTHOG: Simply check feature flag value without reloading
+        // Flag values are now centrally managed when user properties change
+        if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
+            switch planFeatures {
+            case "pro":
+                planThemeColor = .purple
+                planName = "Pro"
+                buttonSize = 70 // Bigger button for Pro
+            case "enterprise":
+                planThemeColor = .green
+                planName = "Enterprise"
+                buttonSize = 90 // Even bigger for Enterprise
+            default:
                 planThemeColor = .blue
                 planName = "Standard"
                 buttonSize = 50 // Standard size
-                print("No plan-features flag found in EventTrackingView, using Standard")
             }
             
-            // Update loading state after everything is processed
-            isLoading = false
+            print("Plan features from feature flag in EventTrackingView: \(planFeatures)")
+        } else {
+            // Default to standard plan if no feature flag is found
+            planThemeColor = .blue
+            planName = "Standard"
+            buttonSize = 50 // Standard size
+            print("No plan-features flag found in EventTrackingView, using Standard")
         }
+        
+        // Update loading state after everything is processed
+        isLoading = false
     }
 }
 

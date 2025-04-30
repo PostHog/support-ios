@@ -325,30 +325,25 @@ struct FeatureShowcaseView: View {
     private func loadFeatureFlags() {
         isLoadingFeatureFlags = true
         
-        // POSTHOG: Reload feature flags to get the latest configuration
-        // This is particularly important when determining feature access
-        PostHogSDK.shared.reloadFeatureFlags()
+        // POSTHOG: Check current feature flags without unnecessary reloading
+        // Feature flags are now centrally managed when user properties change
         
-        // Add a slight delay to ensure flags are loaded
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // POSTHOG: Check for plan-level feature flag to determine user access
-            // This demonstrates using feature flags to control user experience based on plan tier
-            if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String,
-               let planType = PlanType(rawValue: planFeatures) {
-                // Update user state with plan from feature flag
-                userState.updatePlan(planType)
-            }
-            
-            // POSTHOG: Implement a fallback mechanism for feature flags
-            // This is a best practice to handle cases where feature flags might fail
-            if let showFallback = PostHogSDK.shared.getFeatureFlag("show-fallback") as? Bool, showFallback {
-                // Display fallback features for all plans (would be implemented in production)
-                print("Using fallback feature set due to feature flag setting")
-            }
-            
-            // Update loading state
-            isLoadingFeatureFlags = false
+        // Check for plan-level feature flag to determine user access
+        if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String,
+           let planType = PlanType(rawValue: planFeatures) {
+            // Update user state with plan from feature flag
+            userState.updatePlan(planType)
         }
+        
+        // POSTHOG: Implement a fallback mechanism for feature flags
+        // This is a best practice to handle cases where feature flags might fail
+        if let showFallback = PostHogSDK.shared.getFeatureFlag("show-fallback") as? Bool, showFallback {
+            // Display fallback features for all plans (would be implemented in production)
+            print("Using fallback feature set due to feature flag setting")
+        }
+        
+        // Update loading state
+        isLoadingFeatureFlags = false
     }
     
     private func trackScreenView() {
