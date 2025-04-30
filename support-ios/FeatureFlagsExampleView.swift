@@ -176,20 +176,23 @@ struct FeatureFlagsExampleView: View {
         // Log the current user information
         print("Loading feature flags for user: \(userState.userId), plan: \(userState.plan.rawValue)")
         
-        // Explicitly reload feature flags to ensure we have the latest values
+        // POSTHOG: Explicitly reload feature flags to ensure we have the latest values
+        // This ensures the UI reflects the current state on the PostHog server
         PostHogSDK.shared.reloadFeatureFlags {
-            // IMPORTANT: Check feature flags properly
+            // POSTHOG: Check feature flags properly
             
-            // Feature A flag - Premium Analytics
+            // POSTHOG: Boolean feature flag - checks if feature is enabled
+            // isFeatureEnabled returns a boolean indicating if a flag is enabled for the current user
             self.showFeatureA = PostHogSDK.shared.isFeatureEnabled(self.featureAFlagKey)
             print("Feature A flag (\(self.featureAFlagKey)) enabled: \(self.showFeatureA)")
             
-            // Check if there's a payload for more information
+            // POSTHOG: Check if there's a payload for more information
+            // Feature flags can include additional data beyond just on/off
             if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.featureAFlagKey) {
                 print("Feature A payload: \(payload)")
             }
             
-            // Feature B flag - Custom Dashboards
+            // POSTHOG: Second boolean feature flag example
             self.showFeatureB = PostHogSDK.shared.isFeatureEnabled(self.featureBFlagKey)
             print("Feature B flag (\(self.featureBFlagKey)) enabled: \(self.showFeatureB)")
             
@@ -197,7 +200,8 @@ struct FeatureFlagsExampleView: View {
                 print("Feature B payload: \(payload)")
             }
             
-            // Text color flag - requires retrieving the value
+            // POSTHOG: String-value feature flag - requires retrieving the value
+            // getFeatureFlag returns the actual value of the flag, not just true/false
             if let textColorValue = PostHogSDK.shared.getFeatureFlag(self.textColorFlagKey) as? String {
                 print("Text color flag value: \(textColorValue)")
                 switch textColorValue {
@@ -215,12 +219,13 @@ struct FeatureFlagsExampleView: View {
                     print("Text color payload: \(payload)")
                 }
             } else {
-                // Fallback based on plan
+                // POSTHOG: Providing fallbacks when feature flags aren't available
+                // This ensures the app still works even if flags fail to load
                 self.textColor = self.userState.plan.color
                 print("Text color flag not found, using fallback based on plan color")
             }
             
-            // Button style flag - requires retrieving the value
+            // POSTHOG: String-value feature flag for UI component styling
             if let buttonStyleValue = PostHogSDK.shared.getFeatureFlag(self.buttonStyleFlagKey) as? String {
                 print("Button style flag value: \(buttonStyleValue)")
                 self.buttonStyle = buttonStyleValue
@@ -229,7 +234,7 @@ struct FeatureFlagsExampleView: View {
                     print("Button style payload: \(payload)")
                 }
             } else {
-                // Fallback based on plan
+                // POSTHOG: Another fallback example based on user's plan tier
                 switch self.userState.plan {
                 case .enterprise:
                     self.buttonStyle = "shadowed"
@@ -249,7 +254,8 @@ struct FeatureFlagsExampleView: View {
             print("Button Style (\(self.buttonStyleFlagKey)): \(self.buttonStyle)")
             print("--------------------------------------")
             
-            // Log all feature flag evaluations for debugging
+            // POSTHOG: Track feature flag evaluation for analytics
+            // This helps understand which flags are being evaluated and their values
             PostHogSDK.shared.capture("feature_flags_evaluated", properties: [
                 "feature_a_enabled": self.showFeatureA,
                 "feature_b_enabled": self.showFeatureB, 
@@ -273,8 +279,11 @@ struct FeatureFlagsExampleView: View {
         // Reload the flags
         loadFeatureFlags()
         
-        // Capture the reload event
+        // POSTHOG: Track when users manually reload feature flags
+        // This can help understand engagement with the feature flag system
         PostHogSDK.shared.capture("feature_flags_manually_reloaded")
+        
+        // POSTHOG: Force flush events immediately instead of waiting for batch
         PostHogSDK.shared.flush()
     }
 } 

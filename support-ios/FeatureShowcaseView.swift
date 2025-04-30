@@ -313,7 +313,8 @@ struct FeatureShowcaseView: View {
         }
         .navigationTitle(feature.title)
         .onAppear {
-            // Track feature view
+            // POSTHOG: Track which features users are viewing with contextual properties
+            // This helps understand feature popularity and usage by different plan levels
             PostHogSDK.shared.capture("feature_viewed", properties: [
                 "feature_name": feature.title,
                 "required_plan": feature.requiredPlan.rawValue
@@ -324,20 +325,22 @@ struct FeatureShowcaseView: View {
     private func loadFeatureFlags() {
         isLoadingFeatureFlags = true
         
-        // Explicitly reload feature flags to ensure we have the latest values
+        // POSTHOG: Reload feature flags to get the latest configuration
+        // This is particularly important when determining feature access
         PostHogSDK.shared.reloadFeatureFlags()
         
         // Add a slight delay to ensure flags are loaded
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Check for plan feature flag
+            // POSTHOG: Check for plan-level feature flag to determine user access
+            // This demonstrates using feature flags to control user experience based on plan tier
             if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String,
                let planType = PlanType(rawValue: planFeatures) {
                 // Update user state with plan from feature flag
                 userState.updatePlan(planType)
             }
             
-            // Check if we should show a fallback in case feature flags fail
-            // This implements the tip from SUPPORT-INSIGHTS.md: "Use a fallback in case feature flags fail"
+            // POSTHOG: Implement a fallback mechanism for feature flags
+            // This is a best practice to handle cases where feature flags might fail
             if let showFallback = PostHogSDK.shared.getFeatureFlag("show-fallback") as? Bool, showFallback {
                 // Display fallback features for all plans (would be implemented in production)
                 print("Using fallback feature set due to feature flag setting")
@@ -349,6 +352,8 @@ struct FeatureShowcaseView: View {
     }
     
     private func trackScreenView() {
+        // POSTHOG: Track screen views with additional context
+        // This provides richer analytics than automatic screen tracking
         PostHogSDK.shared.capture("screen_viewed", properties: [
             "screen_name": "Feature Explorer",
             "current_plan": userState.plan.rawValue
