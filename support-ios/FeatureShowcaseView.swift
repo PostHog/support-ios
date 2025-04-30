@@ -287,43 +287,29 @@ struct FeatureShowcaseView: View {
     }
     
     private func featureDetailView(for feature: ShowcaseFeature) -> some View {
-        VStack {
-            // Header with feature info
-            VStack(spacing: AppDesign.Spacing.medium) {
+        VStack(spacing: 0) {
+            // Compact header with icon and title only
+            HStack {
                 Image(systemName: feature.icon)
-                    .font(.system(size: 40))
+                    .font(.system(size: 24))
                     .foregroundColor(.white)
-                    .frame(width: 80, height: 80)
+                    .frame(width: 48, height: 48)
                     .background(feature.color)
-                    .cornerRadius(AppDesign.Radius.large)
+                    .cornerRadius(AppDesign.Radius.medium)
                 
                 Text(feature.title)
-                    .font(AppDesign.Typography.titleText)
+                    .font(AppDesign.Typography.headline)
                     .foregroundColor(AppDesign.Colors.text)
                 
-                Text(feature.description)
-                    .font(AppDesign.Typography.bodyText)
-                    .foregroundColor(AppDesign.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                // Educational tip
-                HStack {
-                    Image(systemName: "lightbulb.fill")
-                        .foregroundColor(AppDesign.Colors.secondaryBlue)
-                    
-                    Text("This screen demonstrates how to implement \(feature.title) with PostHog")
-                        .font(AppDesign.Typography.caption)
-                        .foregroundColor(AppDesign.Colors.text)
-                }
-                .padding()
-                .background(AppDesign.Colors.secondaryBlue.opacity(0.1))
-                .cornerRadius(AppDesign.Radius.medium)
+                Spacer()
             }
-            .padding()
+            .padding(.horizontal)
+            .padding(.top, AppDesign.Spacing.medium)
+            .padding(.bottom, AppDesign.Spacing.medium)
             
-            // Demo content
+            // Demo content - full width
             feature.destinationView
+                .edgesIgnoringSafeArea(.bottom)
         }
         .navigationTitle(feature.title)
         .onAppear {

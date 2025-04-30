@@ -22,19 +22,8 @@ struct FeatureFlagsExampleView: View {
                     ProgressView("Loading feature flags...")
                         .padding(.top, 50)
                 } else {
-                    // Educational section
+                    // Live feature flags example
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Feature Flags")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
-                        Text("Feature flags let you control which users see which features. They're perfect for gradual rollouts, A/B testing, and plan-based features.")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                        
-                        Divider()
-                            .padding(.vertical, 8)
-                        
                         Text("Live Example")
                             .font(.headline)
                         
