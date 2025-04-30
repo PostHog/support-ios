@@ -226,6 +226,23 @@ struct OnboardingView: View {
             
             Spacer()
             
+            // Skip button
+            if currentPage < features.count {
+                Button(action: {
+                    // Skip to the user profile form
+                    currentPage = features.count
+                    isPresentingUsername = true
+                    PostHogSDK.shared.capture("onboarding_skipped", properties: [
+                        "skipped_from_page": currentPage
+                    ])
+                }) {
+                    Text("Skip")
+                        .foregroundColor(AppDesign.Colors.textSecondary)
+                }
+                .ghostButton()
+                .padding(.trailing, AppDesign.Spacing.medium)
+            }
+            
             // Next/Get Started button
             Button(action: {
                 if currentPage < features.count {
