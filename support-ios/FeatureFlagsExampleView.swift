@@ -176,92 +176,98 @@ struct FeatureFlagsExampleView: View {
         // Log the current user information
         print("Loading feature flags for user: \(userState.userId), plan: \(userState.plan.rawValue)")
         
-        // Explicitly reload feature flags to ensure we have the latest values
-        PostHogSDK.shared.reloadFeatureFlags {
-            // IMPORTANT: Check feature flags properly
-            
-            // Feature A flag - Premium Analytics
-            self.showFeatureA = PostHogSDK.shared.isFeatureEnabled(self.featureAFlagKey)
-            print("Feature A flag (\(self.featureAFlagKey)) enabled: \(self.showFeatureA)")
-            
-            // Check if there's a payload for more information
-            if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.featureAFlagKey) {
-                print("Feature A payload: \(payload)")
-            }
-            
-            // Feature B flag - Custom Dashboards
-            self.showFeatureB = PostHogSDK.shared.isFeatureEnabled(self.featureBFlagKey)
-            print("Feature B flag (\(self.featureBFlagKey)) enabled: \(self.showFeatureB)")
-            
-            if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.featureBFlagKey) {
-                print("Feature B payload: \(payload)")
-            }
-            
-            // Text color flag - requires retrieving the value
-            if let textColorValue = PostHogSDK.shared.getFeatureFlag(self.textColorFlagKey) as? String {
-                print("Text color flag value: \(textColorValue)")
-                switch textColorValue {
-                case "blue":
-                    self.textColor = .blue
-                case "green":
-                    self.textColor = .green
-                case "purple":
-                    self.textColor = .purple
-                default:
-                    self.textColor = .primary
-                }
-                
-                if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.textColorFlagKey) {
-                    print("Text color payload: \(payload)")
-                }
-            } else {
-                // Fallback based on plan
-                self.textColor = self.userState.plan.color
-                print("Text color flag not found, using fallback based on plan color")
-            }
-            
-            // Button style flag - requires retrieving the value
-            if let buttonStyleValue = PostHogSDK.shared.getFeatureFlag(self.buttonStyleFlagKey) as? String {
-                print("Button style flag value: \(buttonStyleValue)")
-                self.buttonStyle = buttonStyleValue
-                
-                if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.buttonStyleFlagKey) {
-                    print("Button style payload: \(payload)")
-                }
-            } else {
-                // Fallback based on plan
-                switch self.userState.plan {
-                case .enterprise:
-                    self.buttonStyle = "shadowed"
-                case .pro:
-                    self.buttonStyle = "rounded"
-                case .standard:
-                    self.buttonStyle = "standard"
-                }
-                print("Button style flag not found, using fallback based on plan: \(self.buttonStyle)")
-            }
-            
-            // Print debugging information for individual flags
-            print("--------- FEATURE FLAG STATUS ---------")
-            print("Feature A (\(self.featureAFlagKey)): \(self.showFeatureA)")
-            print("Feature B (\(self.featureBFlagKey)): \(self.showFeatureB)")
-            print("Text Color (\(self.textColorFlagKey)): \(self.textColor)")
-            print("Button Style (\(self.buttonStyleFlagKey)): \(self.buttonStyle)")
-            print("--------------------------------------")
-            
-            // Log all feature flag evaluations for debugging
-            PostHogSDK.shared.capture("feature_flags_evaluated", properties: [
-                "feature_a_enabled": self.showFeatureA,
-                "feature_b_enabled": self.showFeatureB, 
-                "text_color_value": self.textColor.description,
-                "button_style_value": self.buttonStyle,
-                "current_plan": self.userState.plan.rawValue,
-                "current_user": self.userState.userId
-            ])
-            
-            // Update the loading state after everything is processed
-            self.isLoadingFeatureFlags = false
+        // POSTHOG: Read the feature flag values without unnecessary reloading
+        // Now that flags are centrally managed, we just need to read the current values
+        checkFeatureFlags()
+    }
+    
+    private func checkFeatureFlags() {
+        // POSTHOG: Boolean feature flag - checks if feature is enabled
+        // isFeatureEnabled returns a boolean indicating if a flag is enabled for the current user
+        self.showFeatureA = PostHogSDK.shared.isFeatureEnabled(self.featureAFlagKey)
+        print("Feature A flag (\(self.featureAFlagKey)) enabled: \(self.showFeatureA)")
+        
+        // POSTHOG: Check if there's a payload for more information
+        // Feature flags can include additional data beyond just on/off
+        if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.featureAFlagKey) {
+            print("Feature A payload: \(payload)")
         }
+        
+        // POSTHOG: Second boolean feature flag example
+        self.showFeatureB = PostHogSDK.shared.isFeatureEnabled(self.featureBFlagKey)
+        print("Feature B flag (\(self.featureBFlagKey)) enabled: \(self.showFeatureB)")
+        
+        if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.featureBFlagKey) {
+            print("Feature B payload: \(payload)")
+        }
+        
+        // POSTHOG: String-value feature flag - requires retrieving the value
+        // getFeatureFlag returns the actual value of the flag, not just true/false
+        if let textColorValue = PostHogSDK.shared.getFeatureFlag(self.textColorFlagKey) as? String {
+            print("Text color flag value: \(textColorValue)")
+            switch textColorValue {
+            case "blue":
+                self.textColor = .blue
+            case "green":
+                self.textColor = .green
+            case "purple":
+                self.textColor = .purple
+            default:
+                self.textColor = .primary
+            }
+            
+            if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.textColorFlagKey) {
+                print("Text color payload: \(payload)")
+            }
+        } else {
+            // POSTHOG: Providing fallbacks when feature flags aren't available
+            // This ensures the app still works even if flags fail to load
+            self.textColor = self.userState.plan.color
+            print("Text color flag not found, using fallback based on plan color")
+        }
+        
+        // POSTHOG: String-value feature flag for UI component styling
+        if let buttonStyleValue = PostHogSDK.shared.getFeatureFlag(self.buttonStyleFlagKey) as? String {
+            print("Button style flag value: \(buttonStyleValue)")
+            self.buttonStyle = buttonStyleValue
+            
+            if let payload = PostHogSDK.shared.getFeatureFlagPayload(self.buttonStyleFlagKey) {
+                print("Button style payload: \(payload)")
+            }
+        } else {
+            // POSTHOG: Another fallback example based on user's plan tier
+            switch self.userState.plan {
+            case .enterprise:
+                self.buttonStyle = "shadowed"
+            case .pro:
+                self.buttonStyle = "rounded"
+            case .standard:
+                self.buttonStyle = "standard"
+            }
+            print("Button style flag not found, using fallback based on plan: \(self.buttonStyle)")
+        }
+        
+        // Print debugging information for individual flags
+        print("--------- FEATURE FLAG STATUS ---------")
+        print("Feature A (\(self.featureAFlagKey)): \(self.showFeatureA)")
+        print("Feature B (\(self.featureBFlagKey)): \(self.showFeatureB)")
+        print("Text Color (\(self.textColorFlagKey)): \(self.textColor)")
+        print("Button Style (\(self.buttonStyleFlagKey)): \(self.buttonStyle)")
+        print("--------------------------------------")
+        
+        // POSTHOG: Track feature flag evaluation for analytics
+        // This helps understand which flags are being evaluated and their values
+        PostHogSDK.shared.capture("feature_flags_evaluated", properties: [
+            "feature_a_enabled": self.showFeatureA,
+            "feature_b_enabled": self.showFeatureB, 
+            "text_color_value": self.textColor.description,
+            "button_style_value": self.buttonStyle,
+            "current_plan": self.userState.plan.rawValue,
+            "current_user": self.userState.userId
+        ])
+        
+        // Update the loading state after everything is processed
+        self.isLoadingFeatureFlags = false
     }
     
     private func reloadFeatureFlags() {
@@ -270,11 +276,15 @@ struct FeatureFlagsExampleView: View {
             isLoadingFeatureFlags = true
         }
         
-        // Reload the flags
-        loadFeatureFlags()
-        
-        // Capture the reload event
-        PostHogSDK.shared.capture("feature_flags_manually_reloaded")
-        PostHogSDK.shared.flush()
+        // POSTHOG: This button demonstrates manual flag reloading
+        // In a real app, this should only be needed for debugging or special cases
+        FeatureFlagManager.reloadFeatureFlags {
+            // After flags are reloaded, check their values
+            self.checkFeatureFlags()
+            
+            // Track this special manual reload action
+            PostHogSDK.shared.capture("feature_flags_manually_reloaded")
+            PostHogSDK.shared.flush()
+        }
     }
 } 
