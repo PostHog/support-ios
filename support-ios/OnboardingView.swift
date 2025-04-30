@@ -47,7 +47,7 @@ struct OnboardingView: View {
             AppDesign.Colors.background
                 .ignoresSafeArea()
             
-            VStack {
+            VStack(spacing: AppDesign.Spacing.small) {
                 // Header
                 headerView
                 
@@ -76,7 +76,7 @@ struct OnboardingView: View {
                         .animation(.easeInOut, value: isPresentingUsername)
                 }
             }
-            .padding()
+            .padding(AppDesign.Spacing.small)
         }
         .onAppear {
             // Track onboarding view
@@ -85,18 +85,18 @@ struct OnboardingView: View {
     }
     
     private var headerView: some View {
-        VStack(spacing: AppDesign.Spacing.medium) {
+        VStack(spacing: AppDesign.Spacing.small) {
             Image(systemName: "swift")
-                .font(.system(size: 48))
+                .font(.system(size: 40))
                 .foregroundColor(AppDesign.Colors.primaryOrange)
-                .padding()
+                .padding(AppDesign.Spacing.medium)
                 .background(
                     Circle()
                         .fill(AppDesign.Colors.primaryOrange.opacity(0.1))
                 )
             
             Text("PostHog iOS Showcase")
-                .font(AppDesign.Typography.largeTitleText)
+                .font(AppDesign.Typography.titleText)
                 .foregroundColor(AppDesign.Colors.text)
             
             Text("Learn how to implement PostHog features in your iOS app")
@@ -104,15 +104,15 @@ struct OnboardingView: View {
                 .foregroundColor(AppDesign.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-                .padding(.bottom, AppDesign.Spacing.small)
+                .lineLimit(2)
         }
-        .padding(.top, AppDesign.Spacing.large)
+        .padding(.top, AppDesign.Spacing.medium)
     }
     
     private func featureCard(_ feature: OnboardingFeature) -> some View {
-        VStack(spacing: AppDesign.Spacing.large) {
+        VStack(spacing: AppDesign.Spacing.medium) {
             Image(systemName: feature.icon)
-                .font(.system(size: 40))
+                .font(.system(size: 36))
                 .foregroundColor(feature.color)
                 .padding()
                 .background(
@@ -129,19 +129,20 @@ struct OnboardingView: View {
                 .foregroundColor(AppDesign.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
+                .lineLimit(2)
             
             codeSnippetView(for: feature.title)
                 .padding(.top, AppDesign.Spacing.small)
         }
-        .padding()
+        .padding(AppDesign.Spacing.medium)
         .cardStyle()
-        .padding(.horizontal, AppDesign.Spacing.large)
+        .padding(.horizontal, AppDesign.Spacing.medium)
     }
     
     private var getStartedCard: some View {
-        VStack(spacing: AppDesign.Spacing.large) {
+        VStack(spacing: AppDesign.Spacing.medium) {
             Image(systemName: "play.fill")
-                .font(.system(size: 40))
+                .font(.system(size: 36))
                 .foregroundColor(AppDesign.Colors.success)
                 .padding()
                 .background(
@@ -158,34 +159,35 @@ struct OnboardingView: View {
                 .foregroundColor(AppDesign.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
+                .lineLimit(2)
             
-            VStack(alignment: .leading, spacing: AppDesign.Spacing.medium) {
+            VStack(alignment: .leading, spacing: AppDesign.Spacing.small) {
                 Text("What you'll see:")
                     .font(AppDesign.Typography.headline)
                     .foregroundColor(AppDesign.Colors.text)
-                    .padding(.bottom, AppDesign.Spacing.tiny)
                 
                 featureRow(icon: "1.circle.fill", text: "Real-time analytics dashboard")
                 featureRow(icon: "2.circle.fill", text: "Feature flag examples")
                 featureRow(icon: "3.circle.fill", text: "Session replay demonstration")
                 featureRow(icon: "4.circle.fill", text: "Code snippets for implementation")
             }
-            .padding()
+            .padding(AppDesign.Spacing.medium)
             .background(AppDesign.Colors.background)
             .cornerRadius(AppDesign.Radius.medium)
         }
-        .padding()
+        .padding(AppDesign.Spacing.medium)
         .cardStyle()
-        .padding(.horizontal, AppDesign.Spacing.large)
+        .padding(.horizontal, AppDesign.Spacing.medium)
     }
     
     private func featureRow(icon: String, text: String) -> some View {
-        HStack(spacing: AppDesign.Spacing.medium) {
+        HStack(spacing: AppDesign.Spacing.small) {
             Image(systemName: icon)
                 .foregroundColor(AppDesign.Colors.primaryOrange)
+                .font(.system(size: 14))
             
             Text(text)
-                .font(AppDesign.Typography.bodyText)
+                .font(AppDesign.Typography.caption)
                 .foregroundColor(AppDesign.Colors.text)
         }
     }
@@ -223,17 +225,18 @@ struct OnboardingView: View {
                 }
             }) {
                 Text(currentPage < features.count ? "Next" : "Get Started")
-                    .padding(.horizontal, AppDesign.Spacing.large)
-                    .padding(.vertical, AppDesign.Spacing.medium)
+                    .padding(.horizontal, AppDesign.Spacing.medium)
+                    .padding(.vertical, AppDesign.Spacing.small)
             }
             .primaryButton()
         }
+        .padding(.horizontal)
     }
     
     private var usernameInputView: some View {
-        VStack(spacing: AppDesign.Spacing.medium) {
+        VStack(spacing: AppDesign.Spacing.small) {
             Text("Create your profile")
-                .font(AppDesign.Typography.titleText)
+                .font(AppDesign.Typography.headline)
                 .foregroundColor(AppDesign.Colors.text)
             
             TextField("Your username", text: $username)
@@ -249,8 +252,8 @@ struct OnboardingView: View {
                 completeOnboarding()
             }) {
                 Text("Start Exploring")
-                    .padding(.horizontal, AppDesign.Spacing.large)
-                    .padding(.vertical, AppDesign.Spacing.medium)
+                    .padding(.horizontal, AppDesign.Spacing.medium)
+                    .padding(.vertical, AppDesign.Spacing.small)
                     .frame(maxWidth: .infinity)
             }
             .primaryButton()
@@ -289,19 +292,18 @@ struct OnboardingView: View {
     private func codeSnippetView(for feature: String) -> some View {
         let code = codeSnippet(for: feature)
         
-        return VStack(alignment: .leading) {
+        return VStack(alignment: .leading, spacing: AppDesign.Spacing.tiny) {
             Text("Example Implementation:")
                 .font(AppDesign.Typography.caption)
                 .foregroundColor(AppDesign.Colors.textSecondary)
-                .padding(.bottom, AppDesign.Spacing.tiny)
             
             Text(code)
                 .font(.system(.caption, design: .monospaced))
                 .foregroundColor(AppDesign.Colors.text)
-                .lineLimit(5)
+                .lineLimit(4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(AppDesign.Spacing.medium)
+        .padding(AppDesign.Spacing.small)
         .background(Color(.systemGray6))
         .cornerRadius(AppDesign.Radius.medium)
     }
