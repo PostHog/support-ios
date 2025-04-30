@@ -47,9 +47,11 @@ struct OnboardingView: View {
             AppDesign.Colors.background
                 .ignoresSafeArea()
             
-            VStack(spacing: AppDesign.Spacing.medium) {
+            VStack {
                 // Header
                 headerView
+                
+                Spacer() // Push all content down
                 
                 // Feature carousel
                 TabView(selection: $currentPage) {
@@ -64,11 +66,11 @@ struct OnboardingView: View {
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
                 .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
-                .animation(.easeInOut, value: currentPage)
-                .frame(maxHeight: 400)
+                .frame(height: 320)
                 
                 // Navigation buttons
                 navigationButtons
+                    .padding(.vertical, AppDesign.Spacing.medium)
                 
                 // Username input (only on last page)
                 if currentPage == features.count && isPresentingUsername {
@@ -76,8 +78,6 @@ struct OnboardingView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         .animation(.easeInOut, value: isPresentingUsername)
                 }
-                
-                Spacer(minLength: 0)
             }
             .padding(AppDesign.Spacing.medium)
         }
@@ -116,7 +116,9 @@ struct OnboardingView: View {
     }
     
     private func featureCard(_ feature: OnboardingFeature) -> some View {
-        VStack(spacing: AppDesign.Spacing.medium) {
+        VStack {
+            Spacer()
+            
             // Icon at the top
             ZStack {
                 Circle()
@@ -127,33 +129,34 @@ struct OnboardingView: View {
                     .font(.system(size: 30))
                     .foregroundColor(feature.color)
             }
-            .padding(.top, AppDesign.Spacing.small)
             
             // Title
             Text(feature.title)
                 .font(AppDesign.Typography.titleText)
                 .foregroundColor(AppDesign.Colors.text)
+                .padding(.top, AppDesign.Spacing.medium)
             
             // Description - main focus
             Text(feature.description)
                 .font(AppDesign.Typography.bodyText)
                 .foregroundColor(AppDesign.Colors.textSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, AppDesign.Spacing.medium)
+                .padding(.horizontal, AppDesign.Spacing.large)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.bottom, AppDesign.Spacing.medium)
+                .padding(.top, AppDesign.Spacing.small)
             
-            Spacer(minLength: 0)
+            Spacer()
         }
-        .frame(height: 300) // Fixed height for consistency
+        .frame(width: UIScreen.main.bounds.width - 60, height: 280)
         .background(AppDesign.Colors.card)
         .cornerRadius(AppDesign.Radius.large)
         .shadow(color: AppDesign.Shadows.small, radius: AppDesign.Shadows.smallRadius, x: 0, y: 1)
-        .padding(.horizontal, AppDesign.Spacing.medium)
     }
     
     private var getStartedCard: some View {
-        VStack(spacing: AppDesign.Spacing.medium) {
+        VStack {
+            Spacer()
+            
             // Icon at the top
             ZStack {
                 Circle()
@@ -164,29 +167,28 @@ struct OnboardingView: View {
                     .font(.system(size: 30))
                     .foregroundColor(AppDesign.Colors.success)
             }
-            .padding(.top, AppDesign.Spacing.small)
             
             // Title
             Text("Ready to Explore")
                 .font(AppDesign.Typography.titleText)
                 .foregroundColor(AppDesign.Colors.text)
+                .padding(.top, AppDesign.Spacing.medium)
             
             // Description - main focus
             Text("Set up your profile to start exploring the PostHog Showcase App")
                 .font(AppDesign.Typography.bodyText)
                 .foregroundColor(AppDesign.Colors.textSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, AppDesign.Spacing.medium)
+                .padding(.horizontal, AppDesign.Spacing.large)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.bottom, AppDesign.Spacing.medium)
+                .padding(.top, AppDesign.Spacing.small)
             
-            Spacer(minLength: 0)
+            Spacer()
         }
-        .frame(height: 300) // Fixed height for consistency
+        .frame(width: UIScreen.main.bounds.width - 60, height: 280)
         .background(AppDesign.Colors.card)
         .cornerRadius(AppDesign.Radius.large)
         .shadow(color: AppDesign.Shadows.small, radius: AppDesign.Shadows.smallRadius, x: 0, y: 1)
-        .padding(.horizontal, AppDesign.Spacing.medium)
     }
     
     private var navigationButtons: some View {
