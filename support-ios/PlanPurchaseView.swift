@@ -9,45 +9,62 @@ struct PlanPurchaseView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Choose Your Plan")
-                .font(.largeTitle)
-                .bold()
-                .padding(.top)
-            
-            ForEach(PlanType.allCases) { plan in
-                PlanCard(plan: plan, isSelected: selectedPlan == plan)
-                    .onTapGesture {
-                        selectedPlan = plan
+        NavigationView {
+            ZStack {
+                AppDesign.Colors.background
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 0) {
+                    // Plan cards in a scrollable area
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            ForEach(PlanType.allCases) { plan in
+                                PlanCard(plan: plan, isSelected: selectedPlan == plan)
+                                    .onTapGesture {
+                                        selectedPlan = plan
+                                    }
+                            }
+                        }
+                        .padding(.top)
+                        .padding(.bottom, 100) // Extra padding at bottom to make sure last card is visible above the button
                     }
+                    
+                    // Fixed purchase button container at the bottom
+                    VStack {
+                        Button(action: {
+                            showPurchaseConfirmation = true
+                        }) {
+                            Text("Purchase \(selectedPlan.displayName) Plan")
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(selectedPlan.color)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 8) // Safe padding for bottom area
+                    }
+                    .background(
+                        Rectangle()
+                            .fill(AppDesign.Colors.background)
+                            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: -2)
+                    )
+                }
             }
-            
-            Spacer()
-            
-            Button(action: {
-                showPurchaseConfirmation = true
-            }) {
-                Text("Purchase \(selectedPlan.displayName) Plan")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(selectedPlan.color)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+            .navigationTitle("Choose Your Plan")
+            .navigationBarTitleDisplayMode(.inline)
+            .alert("Confirm Purchase", isPresented: $showPurchaseConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Purchase") {
+                    completePurchase()
+                }
+            } message: {
+                Text("Would you like to purchase the \(selectedPlan.displayName) plan for $\(selectedPlan.price)/month?")
             }
-            .padding(.horizontal)
-            .padding(.bottom, 30)
-        }
-        .alert("Confirm Purchase", isPresented: $showPurchaseConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Purchase") {
-                completePurchase()
+            .sheet(isPresented: $showUpgradeModal) {
+                UpgradeModalView(plan: selectedPlan)
             }
-        } message: {
-            Text("Would you like to purchase the \(selectedPlan.displayName) plan for $\(selectedPlan.price)/month?")
-        }
-        .sheet(isPresented: $showUpgradeModal) {
-            UpgradeModalView(plan: selectedPlan)
         }
     }
     
