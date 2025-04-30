@@ -109,23 +109,23 @@ struct PlanPurchaseView: View {
         // Flush to ensure the identify call is sent immediately
         PostHogSDK.shared.flush()
         
-        // Reload feature flags to get the latest based on new plan
-        // This is required for iOS SDK as flag values are cached
-        PostHogSDK.shared.reloadFeatureFlags()
-        
-        // Now check the updated flag value
-        if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
-            if planFeatures == "pro" || planFeatures == "enterprise" {
-                showUpgradeModal = true
+        // POSTHOG: Reload feature flags centrally after plan change
+        // This is one of the two critical times flags need to be refreshed
+        FeatureFlagManager.reloadFeatureFlags {
+            // Now check the updated flag value
+            if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
+                if planFeatures == "pro" || planFeatures == "enterprise" {
+                    showUpgradeModal = true
+                } else {
+                    dismiss()
+                }
             } else {
-                dismiss()
-            }
-        } else {
-            // If flag isn't available, base decision on the selected plan
-            if selectedPlan == .pro || selectedPlan == .enterprise {
-                showUpgradeModal = true
-            } else {
-                dismiss()
+                // If flag isn't available, base decision on the selected plan
+                if selectedPlan == .pro || selectedPlan == .enterprise {
+                    showUpgradeModal = true
+                } else {
+                    dismiss()
+                }
             }
         }
         

@@ -50,16 +50,15 @@ struct LoginView: View {
                     // Flush to ensure the identify call is sent immediately
                     PostHogSDK.shared.flush()
                     
-                    // Explicitly reload feature flags after login
-                    // This will get the user's stored properties including their plan
-                    PostHogSDK.shared.reloadFeatureFlags()
-                    
-                    // Complete login
-                    isLoggingIn = false
-                    isLoggedIn = true
-                    
-                    // The DashboardView will look at the feature flag values
-                    // and update the UI based on the user's actual plan
+                    // POSTHOG: Reload feature flags centrally after login
+                    // This is one of the two critical times flags need to be refreshed
+                    FeatureFlagManager.reloadFeatureFlags {
+                        // Complete login after flags are loaded
+                        isLoggingIn = false
+                        isLoggedIn = true
+                        
+                        // The DashboardView will now have the latest flag values based on the user's plan
+                    }
                 }
             }
             .disabled(isLoggingIn)
