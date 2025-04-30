@@ -25,6 +25,7 @@ struct FeatureShowcaseView: View {
     @EnvironmentObject var userState: UserState
     @State private var isLoadingFeatureFlags = true
     @State private var searchText = ""
+    @State private var showPlanPurchase = false
     
     // All available features in the showcase
     private var allFeatures: [ShowcaseFeature] {
@@ -126,12 +127,14 @@ struct FeatureShowcaseView: View {
             .navigationTitle("Feature Explorer")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: PlanPurchaseView()) {
-                        Text("Change Plan")
-                            .font(AppDesign.Typography.button)
-                            .foregroundColor(AppDesign.Colors.primaryOrange)
+                    Button("Change Plan") {
+                        showPlanPurchase = true
                     }
                 }
+            }
+            .sheet(isPresented: $showPlanPurchase) {
+                PlanPurchaseView()
+                    .environmentObject(userState)
             }
             .onAppear {
                 loadFeatureFlags()
@@ -222,7 +225,9 @@ struct FeatureShowcaseView: View {
                 .multilineTextAlignment(.center)
                 .padding()
             
-            NavigationLink(destination: PlanPurchaseView()) {
+            Button(action: {
+                showPlanPurchase = true
+            }) {
                 Text("View Available Plans")
                     .padding(.horizontal, AppDesign.Spacing.large)
                     .padding(.vertical, AppDesign.Spacing.medium)

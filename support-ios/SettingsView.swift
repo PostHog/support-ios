@@ -5,6 +5,7 @@ struct SettingsView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @EnvironmentObject var userState: UserState
     @State private var showResetConfirmation = false
+    @State private var showPlanPurchase = false
     
     var body: some View {
         NavigationView {
@@ -34,6 +35,10 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("This will restart the app at the onboarding screen. Are you sure?")
+            }
+            .sheet(isPresented: $showPlanPurchase) {
+                PlanPurchaseView()
+                    .environmentObject(userState)
             }
             .onAppear {
                 // Track screen view
@@ -86,7 +91,9 @@ struct SettingsView: View {
                 
                 Spacer()
                 
-                NavigationLink(destination: PlanPurchaseView()) {
+                Button(action: {
+                    showPlanPurchase = true
+                }) {
                     Text("Change")
                         .font(AppDesign.Typography.button)
                         .foregroundColor(AppDesign.Colors.primaryOrange)
