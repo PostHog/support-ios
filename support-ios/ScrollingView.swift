@@ -58,12 +58,14 @@ struct ScrollingView: View {
     private func checkPlanFeatureFlag() {
         print("Checking plan feature flag in ScrollingView")
         
-        // Reload feature flags to ensure we have the latest values
+        // POSTHOG: Reload feature flags to ensure we have the latest values
+        // Feature flags might have changed on the server since the app started
         PostHogSDK.shared.reloadFeatureFlags()
         
         // Add a small delay to ensure the flags are loaded
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Check the feature flag that targets based on plan property
+            // POSTHOG: Check the feature flag that determines user plan
+            // This determines what content and features are available
             if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
                 switch planFeatures {
                 case "pro":
@@ -89,7 +91,8 @@ struct ScrollingView: View {
                 print("No plan-features flag found in ScrollingView, using Standard")
             }
             
-            // Track view with plan info
+            // POSTHOG: Track view shown event with plan and content information
+            // This helps analyze different usage patterns by plan type
             PostHogSDK.shared.capture("scrolling_view_shown", properties: [
                 "plan": planName,
                 "item_count": itemCount

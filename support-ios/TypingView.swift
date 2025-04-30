@@ -77,12 +77,14 @@ struct TypingView: View {
     private func checkPlanFeatureFlag() {
         print("Checking plan feature flag in TypingView")
         
-        // Reload feature flags to ensure we have the latest values
+        // POSTHOG: Reload feature flags to ensure we have the latest values
+        // This is best practice to always fetch the latest flags when a view appears
         PostHogSDK.shared.reloadFeatureFlags()
         
         // Add a small delay to ensure the flags are loaded
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Check the feature flag that targets based on plan property
+            // POSTHOG: Check feature flag to determine the user's plan tier
+            // Feature flags are used to remotely control what features are available
             if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
                 switch planFeatures {
                 case "pro":

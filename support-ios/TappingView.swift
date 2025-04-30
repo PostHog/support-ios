@@ -38,7 +38,9 @@ struct EventTrackingView: View {
                             Button(action: {
                                 count += 1
                                 
-                                // 🔥 Custom PostHog event
+                                // POSTHOG: Track button taps with custom properties
+                                // This demonstrates capturing custom events with contextual data
+                                // The properties contain the tap count and user's plan
                                 PostHogSDK.shared.capture("Button Tapped", properties: [
                                     "count": count,
                                     "plan": planName
@@ -84,6 +86,8 @@ struct EventTrackingView: View {
                         if planName == "Enterprise" {
                             Button("Trigger Special Animation") {
                                 showAnimation = true
+                                // POSTHOG: Track premium feature usage
+                                // This helps analyze which premium features are being used
                                 PostHogSDK.shared.capture("special_animation_triggered")
                             }
                             .padding()
@@ -175,12 +179,14 @@ struct EventTrackingView: View {
     private func checkPlanFeatureFlag() {
         print("Checking plan feature flag in EventTrackingView")
         
-        // Reload feature flags to ensure we have the latest values
+        // POSTHOG: Reload feature flags to ensure we have the latest values
+        // This is especially important after the app has been in the background
         PostHogSDK.shared.reloadFeatureFlags()
         
         // Add a small delay to ensure the flags are loaded
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Check the feature flag that targets based on plan property
+            // POSTHOG: Check feature flag that determines user plan
+            // This is an example of using feature flags to control feature access
             if let planFeatures = PostHogSDK.shared.getFeatureFlag("plan-features") as? String {
                 switch planFeatures {
                 case "pro":
