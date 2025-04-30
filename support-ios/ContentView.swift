@@ -113,6 +113,14 @@ struct ContentView: View {
                     }
                     .tag(2)
                 
+                // Settings tab
+                SettingsView()
+                    .environmentObject(userState)
+                    .tabItem {
+                        Label("Settings", systemImage: "gear")
+                    }
+                    .tag(6)
+                
                 // Demo views for testing
                 Group {
                     TypingView()
