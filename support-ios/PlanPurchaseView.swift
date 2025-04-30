@@ -9,34 +9,64 @@ struct PlanPurchaseView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Choose Your Plan")
-                .font(.largeTitle)
-                .bold()
-                .padding(.top)
+        ZStack {
+            AppDesign.Colors.background
+                .ignoresSafeArea()
             
-            ForEach(PlanType.allCases) { plan in
-                PlanCard(plan: plan, isSelected: selectedPlan == plan)
-                    .onTapGesture {
-                        selectedPlan = plan
+            VStack(spacing: 0) {
+                // Header with close button
+                HStack {
+                    Text("Choose Your Plan")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(AppDesign.Colors.textSecondary)
                     }
+                }
+                .padding()
+                
+                // Plan cards in a scrollable area
+                ScrollView {
+                    VStack(spacing: 16) {
+                        ForEach(PlanType.allCases) { plan in
+                            PlanCard(plan: plan, isSelected: selectedPlan == plan)
+                                .onTapGesture {
+                                    selectedPlan = plan
+                                }
+                        }
+                    }
+                    .padding(.bottom, 100) // Extra padding at bottom to make sure last card is visible above the button
+                }
+                
+                // Fixed purchase button container at the bottom
+                VStack {
+                    Button(action: {
+                        showPurchaseConfirmation = true
+                    }) {
+                        Text("Purchase \(selectedPlan.displayName) Plan")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(selectedPlan.color)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 8) // Safe padding for bottom area
+                }
+                .background(
+                    Rectangle()
+                        .fill(AppDesign.Colors.background)
+                        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: -2)
+                )
             }
-            
-            Spacer()
-            
-            Button(action: {
-                showPurchaseConfirmation = true
-            }) {
-                Text("Purchase \(selectedPlan.displayName) Plan")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(selectedPlan.color)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 30)
         }
         .alert("Confirm Purchase", isPresented: $showPurchaseConfirmation) {
             Button("Cancel", role: .cancel) { }
@@ -47,7 +77,12 @@ struct PlanPurchaseView: View {
             Text("Would you like to purchase the \(selectedPlan.displayName) plan for $\(selectedPlan.price)/month?")
         }
         .sheet(isPresented: $showUpgradeModal) {
-            UpgradeModalView(plan: selectedPlan)
+            UpgradeModalView(plan: selectedPlan, dismissParentView: $showUpgradeModal)
+                .environmentObject(userState)
+        }
+        .onDisappear {
+            // Clean up any observers when view disappears
+            NotificationCenter.default.removeObserver(self)
         }
     }
     
@@ -90,6 +125,13 @@ struct PlanPurchaseView: View {
             if selectedPlan == .pro || selectedPlan == .enterprise {
                 showUpgradeModal = true
             } else {
+                dismiss()
+            }
+        }
+        
+        // Listen for notification to dismiss this view when dashboard is shown
+        NotificationCenter.default.addObserver(forName: .navigateToDashboard, object: nil, queue: .main) { _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 dismiss()
             }
         }
@@ -170,6 +212,8 @@ struct PlanCard: View {
 struct UpgradeModalView: View {
     let plan: PlanType
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var userState: UserState
+    @Binding var dismissParentView: Bool
     
     var body: some View {
         VStack(spacing: 20) {
@@ -192,7 +236,20 @@ struct UpgradeModalView: View {
                 .padding(.horizontal)
             
             Button("Continue to Dashboard") {
+                // Track that user clicked on dashboard button
+                PostHogSDK.shared.capture("upgrade_dashboard_clicked")
+                
+                // First dismiss this modal
                 dismiss()
+                
+                // Give time for dismiss to complete before dismissing parent and navigating
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    // Set flag to dismiss parent view
+                    dismissParentView = true
+                    
+                    // Then navigate to dashboard
+                    NotificationCenter.default.post(name: .navigateToDashboard, object: nil)
+                }
             }
             .padding()
             .frame(maxWidth: .infinity)
@@ -213,4 +270,9 @@ struct UpgradeModalView: View {
             ])
         }
     }
+}
+
+// Add notification name for dashboard navigation
+extension Notification.Name {
+    static let navigateToDashboard = Notification.Name("navigateToDashboard")
 } 

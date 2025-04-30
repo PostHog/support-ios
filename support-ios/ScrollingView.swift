@@ -21,14 +21,17 @@ struct ScrollingView: View {
                 ProgressView("Loading features...")
             } else {
                 VStack {
-                    Text("Scrolling Test")
-                        .font(.title)
-                        .foregroundColor(planThemeColor)
-                    
-                    Text("[\(planName) Plan - \(itemCount) Items]")
-                        .font(.subheadline)
-                        .foregroundColor(planThemeColor)
-                        .padding(.bottom, 10)
+                    VStack {
+                        Text("Scrolling Test")
+                            .font(.headline)
+                            .foregroundColor(planThemeColor)
+                        
+                        Text("[\(planName) Plan - \(itemCount) Items]")
+                            .font(.subheadline)
+                            .foregroundColor(planThemeColor)
+                            .padding(.bottom, 5)
+                    }
+                    .padding(.top)
                     
                     ScrollView {
                         VStack(spacing: 10) {
