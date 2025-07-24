@@ -11,7 +11,7 @@ import PostHog
 @main
 struct support_iosApp: App {
     init() {
-        let POSTHOG_API_KEY = "***REMOVED***"
+        let POSTHOG_API_KEY = "YOUR_POSTHOG_API_KEY_HERE"
         let POSTHOG_HOST = "https://us.i.posthog.com"
         
         // POSTHOG: Register for feature flag updates before SDK initialization
